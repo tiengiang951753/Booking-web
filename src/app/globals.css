@@ -3,24 +3,90 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --scrollbar-track: #f4f4f5;
+  --scrollbar-thumb: rgba(156, 163, 175, 0.35);
+  --primary: #2E7E7A;
+  --secondary: #28666b;
+  --primary-hover: #28666b;
+  --highlight: #3AD4C5;
+  --button-text: #FFFFFF;
+  --input-bg: #ffffff;
+  --input-border: #e4e4e7;
+  --input-border-focus: var(--primary);
+  --text-muted: #71717a;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: Arial, Helvetica, sans-serif;
-  --font-mono: Arial, Helvetica, sans-serif;
+  --font-sans: 'Inter', 'Be Vietnam Pro', sans-serif;
+  --font-mono: 'Inter', 'Be Vietnam Pro', sans-serif;
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-highlight: var(--highlight);
+  --color-button-text: var(--button-text);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
+    --background: #0B191B;
     --foreground: #ededed;
+    color-scheme: dark;
+    --scrollbar-track: #18181b;
+    --scrollbar-thumb: rgba(156, 163, 175, 0.5);
+    --input-bg: #18181b;
+    --input-border: #27272a;
+    --input-border-focus: var(--highlight);
+    --text-muted: #a1a1aa;
   }
+}
+
+html {
+  scrollbar-gutter: stable;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: 'Times New Roman', Times, serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--foreground);
+  transition: color 0.3s ease;
+}
+
+/* Custom Scrollbar - Tinh tế và Hiện đại */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+  border-radius: 9999px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 9999px;
+  transition: all 0.2s ease-in-out;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.65);
+}
+
+.scrollbar-thin::-webkit-scrollbar-corner {
+  background: transparent;
 }

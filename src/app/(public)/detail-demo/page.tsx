@@ -34,9 +34,24 @@ const court = {
     { icon: "🥤", label: "Canteen & nước uống" },
   ],
   pricing: [
-    { label: "Khung giờ vàng (Sáng)", time: "05:00 – 08:00", price: "60.000đ - 80.000đ", note: "/ giờ / sân" },
-    { label: "Giờ thường", time: "08:00 – 17:00", price: "80.000đ - 100.000đ", note: "/ giờ / sân" },
-    { label: "Giờ cao điểm (Tối)", time: "17:00 – 22:00", price: "120.000đ - 140.000đ", note: "/ giờ / sân" },
+    {
+      label: "Khung giờ vàng (Sáng)",
+      time: "05:00 – 08:00",
+      price: "60.000đ - 80.000đ",
+      note: "/ giờ / sân",
+    },
+    {
+      label: "Giờ thường",
+      time: "08:00 – 17:00",
+      price: "80.000đ - 100.000đ",
+      note: "/ giờ / sân",
+    },
+    {
+      label: "Giờ cao điểm (Tối)",
+      time: "17:00 – 22:00",
+      price: "120.000đ - 140.000đ",
+      note: "/ giờ / sân",
+    },
   ],
   reviews: [
     {
@@ -77,7 +92,8 @@ const court = {
       rating: 5.0,
       price: "150.000đ - 220.000đ",
       category: "🏓",
-      image: "https://images.unsplash.com/photo-1599447421416-3414500d18a5?auto=format&fit=crop&w=400&q=80",
+      image:
+        "https://images.unsplash.com/photo-1599447421416-3414500d18a5?auto=format&fit=crop&w=400&q=80",
       distance: "2.4 km",
     },
     {
@@ -86,7 +102,8 @@ const court = {
       rating: 4.8,
       price: "180.000đ - 250.000đ",
       category: "🎾",
-      image: "https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?auto=format&fit=crop&w=400&q=80",
+      image:
+        "https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?auto=format&fit=crop&w=400&q=80",
       distance: "3.1 km",
     },
   ],
@@ -137,9 +154,13 @@ const getSlotPrice = (courtType: string, slotStartHour: number) => {
 };
 
 // Stable mock bookings based on selected day, court id, and slot index
-const getMockBookingStatus = (dayIndex: number, courtId: string, slotIndex: number) => {
+const getMockBookingStatus = (
+  dayIndex: number,
+  courtId: string,
+  slotIndex: number,
+) => {
   const slotHour = 5 + Math.floor(slotIndex / 2);
-  
+
   if (slotHour >= 5 && slotHour < 7) {
     return (slotIndex + dayIndex) % 4 === 0;
   }
@@ -152,12 +173,29 @@ const getMockBookingStatus = (dayIndex: number, courtId: string, slotIndex: numb
   if (slotHour >= 22) {
     return (slotIndex + dayIndex * 2) % 2 === 0;
   }
-  
+
   return (slotIndex + courtId.charCodeAt(1) * dayIndex) % 6 === 0;
 };
 
 const weekDays = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
 const today = new Date();
+
+const formatDateVi = (date: Date) => {
+  const weekdaysVi = [
+    "Chủ Nhật",
+    "Thứ Hai",
+    "Thứ Ba",
+    "Thứ Tư",
+    "Thứ Năm",
+    "Thứ Sáu",
+    "Thứ Bảy",
+  ];
+  const weekday = weekdaysVi[date.getDay()];
+  const day = date.getDate();
+  const month = date.getMonth() + 1;
+  const year = date.getFullYear();
+  return `${weekday}, ${day}/${month}/${year}`;
+};
 
 interface SelectedSlot {
   courtId: string;
@@ -170,7 +208,9 @@ interface SelectedSlot {
 
 export default function DetailPage() {
   const [activeImage, setActiveImage] = useState(0);
-  const [selectedDay, setSelectedDay] = useState(0);
+  const currentDayOfWeek = today.getDay();
+  const defaultSelectedDay = currentDayOfWeek === 0 ? 6 : currentDayOfWeek - 1;
+  const [selectedDay, setSelectedDay] = useState(defaultSelectedDay);
   const [selectedSlots, setSelectedSlots] = useState<SelectedSlot[]>([]);
   const [guestCount, setGuestCount] = useState(2);
   const [fullName, setFullName] = useState("");
@@ -179,10 +219,12 @@ export default function DetailPage() {
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [highlightAvailableOnly, setHighlightAvailableOnly] = useState(false);
 
-  // Generate week dates from today
+  // Week Dates starting from Monday of current week
   const weekDates = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(today);
-    d.setDate(today.getDate() + i);
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+    d.setDate(diff + i);
     d.setHours(0, 0, 0, 0);
     return d;
   });
@@ -190,22 +232,27 @@ export default function DetailPage() {
   const handleToggleSlot = (
     courtItem: { id: string; name: string },
     slot: { id: string; label: string; start: string; end: string },
-    price: number
+    price: number,
   ) => {
-    const dateStr = weekDates[selectedDay].toLocaleDateString("vi-VN", {
-      weekday: "long",
-      year: "numeric",
-      month: "numeric",
-      day: "numeric",
-    });
-    
+    const dateStr = formatDateVi(weekDates[selectedDay]);
+
     const isAlreadySelected = selectedSlots.some(
-      (s) => s.courtId === courtItem.id && s.slotId === slot.id && s.dateStr === dateStr
+      (s) =>
+        s.courtId === courtItem.id &&
+        s.slotId === slot.id &&
+        s.dateStr === dateStr,
     );
 
     if (isAlreadySelected) {
       setSelectedSlots((prev) =>
-        prev.filter((s) => !(s.courtId === courtItem.id && s.slotId === slot.id && s.dateStr === dateStr))
+        prev.filter(
+          (s) =>
+            !(
+              s.courtId === courtItem.id &&
+              s.slotId === slot.id &&
+              s.dateStr === dateStr
+            ),
+        ),
       );
     } else {
       setSelectedSlots((prev) => [
@@ -222,9 +269,20 @@ export default function DetailPage() {
     }
   };
 
-  const handleRemoveSlot = (courtId: string, slotId: string, dateStr: string) => {
+  const handleRemoveSlot = (
+    courtId: string,
+    slotId: string,
+    dateStr: string,
+  ) => {
     setSelectedSlots((prev) =>
-      prev.filter((s) => !(s.courtId === courtId && s.slotId === slotId && s.dateStr === dateStr))
+      prev.filter(
+        (s) =>
+          !(
+            s.courtId === courtId &&
+            s.slotId === slotId &&
+            s.dateStr === dateStr
+          ),
+      ),
     );
   };
 
@@ -247,47 +305,20 @@ export default function DetailPage() {
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-50 transition-colors duration-300">
-      {/* ─── HEADER ─────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-40 w-full border-b border-zinc-200/80 dark:border-zinc-800/80 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link
-              href="/"
-              className="flex items-center gap-2 text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-100 transition-colors"
-            >
-              <span className="text-lg">←</span>
-              <span className="text-sm font-medium">Quay lại</span>
-            </Link>
-            <span className="text-zinc-300 dark:text-zinc-700">|</span>
-            <Link href="/" className="flex items-center gap-1.5">
-              <span className="text-xl font-black bg-gradient-to-r from-emerald-500 via-teal-500 to-indigo-600 bg-clip-text text-transparent tracking-tight">
-                SportHub
-              </span>
-              <span className="hidden sm:inline-block px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold text-xs tracking-wider uppercase">
-                Pro
-              </span>
-            </Link>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button className="p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:text-emerald-500 hover:border-emerald-300 dark:hover:border-emerald-700 transition-all duration-200" title="Lưu yêu thích">
-              ♡
-            </button>
-            <button className="p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:text-emerald-500 hover:border-emerald-300 dark:hover:border-emerald-700 transition-all duration-200" title="Chia sẻ">
-              ↗
-            </button>
-          </div>
-        </div>
-      </header>
-
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* ─── BREADCRUMB ──────────────────────────────────────────────── */}
         <nav className="flex items-center gap-2 text-xs text-zinc-400 dark:text-zinc-500 mb-6">
-          <Link href="/" className="hover:text-emerald-500 transition-colors">Trang chủ</Link>
+          <Link href="/" className="hover:text-emerald-500 transition-colors">
+            Trang chủ
+          </Link>
           <span>/</span>
-          <Link href="/" className="hover:text-emerald-500 transition-colors">Cầu lông</Link>
+          <Link href="/" className="hover:text-emerald-500 transition-colors">
+            Cầu lông
+          </Link>
           <span>/</span>
-          <span className="text-zinc-700 dark:text-zinc-300 font-medium truncate max-w-xs">{court.name}</span>
+          <span className="text-zinc-700 dark:text-zinc-300 font-medium truncate max-w-xs">
+            {court.name}
+          </span>
         </nav>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-10">
@@ -305,8 +336,17 @@ export default function DetailPage() {
                 {/* Popular badge */}
                 {court.popular && (
                   <div className="absolute top-4 left-4">
-                    <span className="px-3 py-1 rounded-full bg-emerald-500 text-white text-xs font-bold tracking-wider uppercase shadow-lg shadow-emerald-500/30">
-                      🔥 Phổ biến
+                    <span className="inline-flex items-center justify-center gap-1 h-6 px-2.5 rounded-full bg-highlight text-white text-[10px] font-black tracking-widest uppercase shadow-lg shadow-highlight/35 border border-white/20 select-none">
+                      <svg
+                        className="w-3.5 h-3.5 text-amber-300 fill-current animate-pulse flex-shrink-0"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67zM11.71 19c-1.78 0-3.22-1.4-3.22-3.14 0-1.62 1.05-2.76 2.81-3.12 1.77-.36 3.6-1.21 4.62-2.58.39 1.29.59 2.65.59 4.04 0 2.65-2.12 4.8-4.8 4.8z" />
+                      </svg>
+                      <span className="leading-none translate-y-[-1px]">
+                        Phổ biến
+                      </span>
                     </span>
                   </div>
                 )}
@@ -318,13 +358,20 @@ export default function DetailPage() {
                 </div>
                 {/* Nav arrows */}
                 <button
-                  onClick={() => setActiveImage((p) => (p - 1 + court.images.length) % court.images.length)}
+                  onClick={() =>
+                    setActiveImage(
+                      (p) =>
+                        (p - 1 + court.images.length) % court.images.length,
+                    )
+                  }
                   className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/40 backdrop-blur-md text-white hover:bg-black/70 transition-colors flex items-center justify-center text-sm font-bold"
                 >
                   ‹
                 </button>
                 <button
-                  onClick={() => setActiveImage((p) => (p + 1) % court.images.length)}
+                  onClick={() =>
+                    setActiveImage((p) => (p + 1) % court.images.length)
+                  }
                   className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/40 backdrop-blur-md text-white hover:bg-black/70 transition-colors flex items-center justify-center text-sm font-bold"
                 >
                   ›
@@ -343,7 +390,11 @@ export default function DetailPage() {
                         : "opacity-60 hover:opacity-90"
                     }`}
                   >
-                    <img src={img} alt="" className="w-full h-full object-cover" />
+                    <img
+                      src={img}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
                   </button>
                 ))}
               </div>
@@ -371,9 +422,13 @@ export default function DetailPage() {
                 <div className="flex flex-col items-end gap-1">
                   <div className="flex items-center gap-1.5 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-xl px-3 py-2">
                     <span className="text-amber-500 text-lg">★</span>
-                    <span className="text-xl font-black text-amber-600 dark:text-amber-400">{court.rating}</span>
+                    <span className="text-xl font-black text-amber-600 dark:text-amber-400">
+                      {court.rating}
+                    </span>
                   </div>
-                  <span className="text-xs text-zinc-400 dark:text-zinc-500">{court.reviewsCount} đánh giá</span>
+                  <span className="text-xs text-zinc-400 dark:text-zinc-500">
+                    {court.reviewsCount} đánh giá
+                  </span>
                 </div>
               </div>
 
@@ -395,13 +450,16 @@ export default function DetailPage() {
                   <h2 className="text-xl font-black tracking-tight text-zinc-850 dark:text-zinc-50">
                     Bảng Lịch Đặt Sân Trực Tuyến
                   </h2>
-                  <p className="text-xs text-zinc-450 dark:text-zinc-400 mt-1">
-                    Nhấp vào ô giờ trống để đặt sân. Các sân VIP & thảm chuyên nghiệp được ký hiệu riêng biệt.
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                    Nhấp vào ô giờ trống để đặt sân. Các sân VIP & thảm chuyên
+                    nghiệp được ký hiệu riêng biệt.
                   </p>
                 </div>
                 {/* Visual filter toggle */}
                 <button
-                  onClick={() => setHighlightAvailableOnly(!highlightAvailableOnly)}
+                  onClick={() =>
+                    setHighlightAvailableOnly(!highlightAvailableOnly)
+                  }
                   className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${
                     highlightAvailableOnly
                       ? "bg-emerald-500/10 border-emerald-500 text-emerald-600 dark:text-emerald-400"
@@ -409,7 +467,11 @@ export default function DetailPage() {
                   }`}
                 >
                   <span>✨</span>
-                  <span>{highlightAvailableOnly ? "Hiển thị tất cả" : "Nhấn mạnh ô trống"}</span>
+                  <span>
+                    {highlightAvailableOnly
+                      ? "Hiển thị tất cả"
+                      : "Nhấn mạnh ô trống"}
+                  </span>
                 </button>
               </div>
 
@@ -421,8 +483,9 @@ export default function DetailPage() {
                 <div className="grid grid-cols-7 gap-2">
                   {weekDates.map((date, i) => {
                     const isSelected = selectedDay === i;
-                    const dateDayName = weekDays[date.getDay() === 0 ? 6 : date.getDay() - 1];
-                    const isToday = i === 0;
+                    const dateDayName =
+                      weekDays[date.getDay() === 0 ? 6 : date.getDay() - 1];
+                    const isToday = date.toDateString() === today.toDateString();
 
                     return (
                       <button
@@ -431,17 +494,25 @@ export default function DetailPage() {
                         className={`flex flex-col items-center gap-1 py-3 px-2 rounded-2xl border transition-all duration-300 relative ${
                           isSelected
                             ? "bg-emerald-500 border-emerald-600 text-white shadow-lg shadow-emerald-500/20 scale-[1.02]"
-                            : "bg-zinc-50 dark:bg-zinc-800/50 border-zinc-200/50 dark:border-zinc-800 text-zinc-600 dark:text-zinc-450 hover:bg-zinc-100 hover:border-zinc-300 dark:hover:bg-zinc-800"
+                            : "bg-zinc-50 dark:bg-zinc-800/50 border-zinc-200/50 dark:border-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 hover:border-zinc-300 dark:hover:bg-zinc-800"
                         }`}
                       >
                         {isToday && (
-                          <span className={`absolute -top-2 left-1/2 -translate-x-1/2 px-1.5 py-0.5 rounded text-[8px] font-extrabold uppercase ${isSelected ? "bg-white text-emerald-600" : "bg-emerald-500 text-white"}`}>
+                          <span
+                            className={`absolute -top-2 left-1/2 -translate-x-1/2 px-1.5 py-0.5 rounded text-[8px] font-extrabold uppercase ${isSelected ? "bg-white text-emerald-600" : "bg-emerald-500 text-white"}`}
+                          >
                             Hôm nay
                           </span>
                         )}
-                        <span className="text-[9px] font-bold uppercase opacity-80">{dateDayName}</span>
-                        <span className="text-base font-black tracking-tight">{date.getDate()}</span>
-                        <span className="text-[9px] opacity-70">Thg {date.getMonth() + 1}</span>
+                        <span className="text-[9px] font-bold uppercase opacity-80">
+                          {dateDayName}
+                        </span>
+                        <span className="text-base font-black tracking-tight">
+                          {date.getDate()}
+                        </span>
+                        <span className="text-[9px] opacity-70">
+                          Thg {date.getMonth() + 1}
+                        </span>
                       </button>
                     );
                   })}
@@ -477,12 +548,16 @@ export default function DetailPage() {
                     <thead>
                       {/* First Header Row: Hours */}
                       <tr className="bg-zinc-100 dark:bg-zinc-800 text-[10px] md:text-[11px] font-bold text-zinc-500 dark:text-zinc-400 border-b border-zinc-200 dark:border-zinc-700">
-                        <th className="sticky left-0 z-30 bg-zinc-100 dark:bg-zinc-850 px-4 py-3 text-left w-[150px] min-w-[150px] border-r border-zinc-200 dark:border-zinc-700 font-extrabold shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)]">
+                        <th
+                          rowSpan={2}
+                          className="sticky left-0 z-30 bg-zinc-100 dark:bg-zinc-850 px-4 py-3 text-left w-[150px] min-w-[150px] border-r border-zinc-200 dark:border-zinc-700 font-extrabold shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] align-middle"
+                        >
                           Sân Đặt
                         </th>
                         {Array.from({ length: 19 }, (_, i) => {
                           const hour = 5 + i;
-                          const hourStr = hour.toString().padStart(2, "0") + ":00";
+                          const hourStr =
+                            hour.toString().padStart(2, "0") + ":00";
                           return (
                             <th
                               key={i}
@@ -495,15 +570,14 @@ export default function DetailPage() {
                         })}
                       </tr>
                       {/* Second Header Row: 30-min intervals */}
-                      <tr className="bg-zinc-50 dark:bg-zinc-900 text-[9px] font-bold text-zinc-450 dark:text-zinc-500 border-b border-zinc-200 dark:border-zinc-850">
-                        <th className="sticky left-0 z-30 bg-zinc-50 dark:bg-zinc-900 px-4 py-2 text-left border-r border-zinc-200 dark:border-zinc-800 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)]">
-                          Phân loại / 30p
-                        </th>
+                      <tr className="bg-zinc-50 dark:bg-zinc-900 text-[9px] font-bold text-zinc-500 dark:text-zinc-500 border-b border-zinc-200 dark:border-zinc-850">
                         {TIME_SLOTS.map((slot) => (
                           <th
                             key={slot.id}
                             className={`px-1 py-2 text-center border-r border-zinc-200 dark:border-zinc-800 w-[60px] min-w-[60px] ${
-                              slot.isPeak ? "text-amber-500 dark:text-amber-400 font-extrabold bg-amber-500/5" : ""
+                              slot.isPeak
+                                ? "text-amber-500 dark:text-amber-400 font-extrabold bg-amber-500/5"
+                                : ""
                             }`}
                           >
                             {slot.start.endsWith("30") ? ":30" : ":00"}
@@ -535,7 +609,9 @@ export default function DetailPage() {
                                     {courtItem.type}
                                   </span>
                                   <span className="text-[9px] text-zinc-400 dark:text-zinc-500">
-                                    {courtItem.type === "VIP" ? "100k-140k/h" : "80k-120k/h"}
+                                    {courtItem.type === "VIP"
+                                      ? "100k-140k/h"
+                                      : "80k-120k/h"}
                                   </span>
                                 </div>
                               </div>
@@ -543,17 +619,22 @@ export default function DetailPage() {
 
                             {/* 38 Cells */}
                             {TIME_SLOTS.map((slot, index) => {
-                              const isBooked = getMockBookingStatus(selectedDay, courtItem.id, index);
-                              const dateStr = weekDates[selectedDay].toLocaleDateString("vi-VN", {
-                                weekday: "long",
-                                year: "numeric",
-                                month: "numeric",
-                                day: "numeric",
-                              });
-                              const isSelected = selectedSlots.some(
-                                (s) => s.courtId === courtItem.id && s.slotId === slot.id && s.dateStr === dateStr
+                              const isBooked = getMockBookingStatus(
+                                selectedDay,
+                                courtItem.id,
+                                index,
                               );
-                              const price = getSlotPrice(courtItem.type, slot.hourNum);
+                              const dateStr = formatDateVi(weekDates[selectedDay]);
+                              const isSelected = selectedSlots.some(
+                                (s) =>
+                                  s.courtId === courtItem.id &&
+                                  s.slotId === slot.id &&
+                                  s.dateStr === dateStr,
+                              );
+                              const price = getSlotPrice(
+                                courtItem.type,
+                                slot.hourNum,
+                              );
 
                               return (
                                 <td
@@ -563,37 +644,40 @@ export default function DetailPage() {
                                   {isBooked ? (
                                     <div
                                       title="Đã có người đặt"
-                                      className="h-10 w-full flex items-center justify-center bg-zinc-100/70 dark:bg-zinc-950/60 text-zinc-300 dark:text-zinc-700 cursor-not-allowed select-none rounded border border-transparent"
-                                      style={{
-                                        backgroundImage:
-                                          "linear-gradient(45deg, rgba(161, 161, 170, 0.08) 25%, transparent 25%, transparent 50%, rgba(161, 161, 170, 0.08) 50%, rgba(161, 161, 170, 0.08) 75%, transparent 75%, transparent)",
-                                        backgroundSize: "6px 6px",
-                                      }}
+                                      className="h-10 w-full flex items-center justify-center bg-zinc-200 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 cursor-not-allowed select-none rounded border border-transparent"
                                     >
-                                      <span className="text-[8px] font-extrabold text-zinc-400 dark:text-zinc-600 tracking-wider">ĐÃ ĐẶT</span>
+                                      <span className="text-[8px] font-extrabold text-zinc-500 dark:text-zinc-400 tracking-wider">
+                                        ĐÃ ĐẶT
+                                      </span>
                                     </div>
                                   ) : (
                                     <button
-                                      onClick={() => handleToggleSlot(courtItem, slot, price)}
+                                      onClick={() =>
+                                        handleToggleSlot(courtItem, slot, price)
+                                      }
                                       title={`${courtItem.name}\n${slot.label}\nNgày: ${dateStr}\nGiá: ${price.toLocaleString("vi-VN")}đ`}
                                       className={`h-10 w-full rounded flex flex-col items-center justify-center gap-0.5 transition-all duration-150 border text-center ${
                                         isSelected
                                           ? "bg-emerald-500 text-white border-emerald-600 dark:border-emerald-400 shadow-md shadow-emerald-500/20 scale-[0.97]"
                                           : highlightAvailableOnly
-                                          ? "bg-emerald-50/10 dark:bg-emerald-950/5 border-emerald-300 dark:border-emerald-700 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100/30 hover:scale-[0.97]"
-                                          : "bg-white dark:bg-zinc-900/60 border-zinc-200/60 dark:border-zinc-800 hover:border-emerald-400 dark:hover:border-emerald-600 hover:bg-emerald-50/30 dark:hover:bg-emerald-950/10 hover:scale-[0.97]"
+                                            ? "bg-emerald-50/10 dark:bg-emerald-950/5 border-emerald-300 dark:border-emerald-700 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100/30 hover:scale-[0.97]"
+                                            : "bg-white dark:bg-zinc-900/60 border-zinc-200/60 dark:border-zinc-800 hover:border-emerald-400 dark:hover:border-emerald-600 hover:bg-emerald-50/30 dark:hover:bg-emerald-950/10 hover:scale-[0.97]"
                                       }`}
                                     >
                                       <span
                                         className={`text-[9px] font-extrabold tracking-wider ${
-                                          isSelected ? "text-white" : "text-emerald-600 dark:text-emerald-400"
+                                          isSelected
+                                            ? "text-white"
+                                            : "text-highlight"
                                         }`}
                                       >
                                         {(price / 1000).toString()}K
                                       </span>
                                       <span
                                         className={`text-[8px] font-medium leading-none ${
-                                          isSelected ? "text-emerald-100" : "text-zinc-400 dark:text-zinc-500"
+                                          isSelected
+                                            ? "text-emerald-100"
+                                            : "text-zinc-400 dark:text-zinc-500"
                                         }`}
                                       >
                                         {slot.isPeak ? "Giờ vàng" : "Thường"}
@@ -630,7 +714,9 @@ export default function DetailPage() {
                     className="flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-800 text-center hover:border-emerald-300 dark:hover:border-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all duration-200"
                   >
                     <span className="text-2xl">{f.icon}</span>
-                    <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">{f.label}</span>
+                    <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                      {f.label}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -638,7 +724,9 @@ export default function DetailPage() {
 
             {/* ── PRICING TABLE ─────────────────────────────────────── */}
             <section className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200/60 dark:border-zinc-800/60 p-6 shadow-sm">
-              <h2 className="text-lg font-bold mb-4">Bảng giá chi tiết theo giờ</h2>
+              <h2 className="text-lg font-bold mb-4">
+                Bảng giá chi tiết theo giờ
+              </h2>
               <div className="space-y-3">
                 {court.pricing.map((tier, i) => (
                   <div
@@ -650,14 +738,22 @@ export default function DetailPage() {
                     }`}
                   >
                     <div>
-                      <p className="text-sm font-bold text-zinc-800 dark:text-zinc-100">{tier.label}</p>
-                      <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">{tier.time}</p>
+                      <p className="text-sm font-bold text-zinc-800 dark:text-zinc-100">
+                        {tier.label}
+                      </p>
+                      <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">
+                        {tier.time}
+                      </p>
                     </div>
                     <div className="text-right">
-                      <p className={`text-base font-black ${i === 2 ? "text-emerald-600 dark:text-emerald-400" : "text-zinc-800 dark:text-zinc-100"}`}>
+                      <p
+                        className={`text-base font-black ${i === 2 ? "text-highlight" : "text-zinc-800 dark:text-zinc-100"}`}
+                      >
                         {tier.price}
                       </p>
-                      <p className="text-xs text-zinc-400 dark:text-zinc-500">{tier.note}</p>
+                      <p className="text-xs text-zinc-400 dark:text-zinc-500">
+                        {tier.note}
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -669,21 +765,33 @@ export default function DetailPage() {
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-bold">Đánh giá từ người dùng</h2>
                 <div className="flex items-center gap-2">
-                  <span className="text-3xl font-black text-amber-500">{court.rating}</span>
+                  <span className="text-3xl font-black text-amber-500">
+                    {court.rating}
+                  </span>
                   <div>
                     <div className="flex gap-0.5">
                       {[1, 2, 3, 4, 5].map((s) => (
-                        <span key={s} className={`text-sm ${s <= Math.round(court.rating) ? "text-amber-400" : "text-zinc-300"}`}>★</span>
+                        <span
+                          key={s}
+                          className={`text-sm ${s <= Math.round(court.rating) ? "text-amber-400" : "text-zinc-300"}`}
+                        >
+                          ★
+                        </span>
                       ))}
                     </div>
-                    <p className="text-xs text-zinc-400">{court.reviewsCount} đánh giá</p>
+                    <p className="text-xs text-zinc-400">
+                      {court.reviewsCount} đánh giá
+                    </p>
                   </div>
                 </div>
               </div>
 
               <div className="space-y-5">
                 {court.reviews.map((rev) => (
-                  <div key={rev.id} className="flex gap-4 pb-5 border-b border-zinc-150 dark:border-zinc-800 last:border-0 last:pb-0">
+                  <div
+                    key={rev.id}
+                    className="flex gap-4 pb-5 border-b border-zinc-150 dark:border-zinc-800 last:border-0 last:pb-0"
+                  >
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
                       {rev.avatar}
                     </div>
@@ -691,15 +799,24 @@ export default function DetailPage() {
                       <div className="flex items-center justify-between gap-2 flex-wrap">
                         <div>
                           <p className="text-sm font-bold">{rev.name}</p>
-                          <p className="text-xs text-zinc-400 dark:text-zinc-500">{rev.date}</p>
+                          <p className="text-xs text-zinc-400 dark:text-zinc-500">
+                            {rev.date}
+                          </p>
                         </div>
                         <div className="flex gap-0.5">
-                          {[1, 2, 3, 4, 5].map(s => (
-                            <span key={s} className={`text-xs ${s <= rev.rating ? "text-amber-400" : "text-zinc-300"}`}>★</span>
+                          {[1, 2, 3, 4, 5].map((s) => (
+                            <span
+                              key={s}
+                              className={`text-xs ${s <= rev.rating ? "text-amber-400" : "text-zinc-300"}`}
+                            >
+                              ★
+                            </span>
                           ))}
                         </div>
                       </div>
-                      <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">{rev.content}</p>
+                      <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                        {rev.content}
+                      </p>
                       <button className="mt-2 flex items-center gap-1.5 text-xs text-zinc-400 hover:text-emerald-500 transition-colors">
                         <span>👍</span>
                         <span>Hữu ích ({rev.likes})</span>
@@ -722,21 +839,33 @@ export default function DetailPage() {
                   <Link
                     key={n.id}
                     href={`/bookings/${n.id}`}
-                    className="group flex gap-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200/60 dark:border-zinc-800/60 overflow-hidden hover:border-emerald-400/45 dark:hover:border-emerald-600/45 hover:shadow-lg transition-all duration-300"
+                    className="group flex gap-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200/60 dark:border-zinc-800/60 overflow-hidden hover:border-highlight/50 dark:hover:border-highlight/30 hover:shadow-lg transition-all duration-300"
                   >
                     <div className="w-24 flex-shrink-0 aspect-square overflow-hidden bg-zinc-100">
-                      <img src={n.image} alt={n.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      <img
+                        src={n.image}
+                        alt={n.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
                     </div>
                     <div className="py-4 pr-4 flex flex-col justify-between flex-1 min-w-0">
                       <div>
                         <p className="text-xs mb-1">{n.category}</p>
-                        <p className="text-sm font-bold leading-tight line-clamp-2 group-hover:text-emerald-500 transition-colors">{n.name}</p>
+                        <p className="text-sm font-bold leading-tight line-clamp-2 group-hover:text-emerald-500 transition-colors">
+                          {n.name}
+                        </p>
                       </div>
                       <div className="flex items-center justify-between mt-2">
-                        <span className="text-xs text-amber-500 font-bold">★ {n.rating}</span>
-                        <span className="text-xs text-zinc-400">{n.distance}</span>
+                        <span className="text-xs text-amber-500 font-bold">
+                          ★ {n.rating}
+                        </span>
+                        <span className="text-xs text-zinc-400">
+                          {n.distance}
+                        </span>
                       </div>
-                      <p className="text-xs text-emerald-600 dark:text-emerald-400 font-bold mt-1">{n.price}/h</p>
+                      <p className="text-xs text-highlight font-bold mt-1">
+                        {n.price}/h
+                      </p>
                     </div>
                   </Link>
                 ))}
@@ -774,11 +903,15 @@ export default function DetailPage() {
                       Chưa chọn ô đặt sân nào
                     </h4>
                     <p className="text-xs text-zinc-400 leading-relaxed max-w-xs mx-auto">
-                      Vui lòng cuộn lịch đặt sân bên trái và nhấn chọn các ô giờ trống màu trắng phù hợp với kế hoạch của bạn.
+                      Vui lòng cuộn lịch đặt sân bên trái và nhấn chọn các ô giờ
+                      trống màu trắng phù hợp với kế hoạch của bạn.
                     </p>
                   </div>
                 ) : (
-                  <form onSubmit={handleBookingSubmit} className="p-6 space-y-6">
+                  <form
+                    onSubmit={handleBookingSubmit}
+                    className="p-6 space-y-6"
+                  >
                     {/* Selected slots list */}
                     <div className="space-y-2">
                       <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 pb-1 border-b border-zinc-100 dark:border-zinc-800">
@@ -806,12 +939,18 @@ export default function DetailPage() {
                               </p>
                             </div>
                             <div className="flex items-center gap-3 ml-2 flex-shrink-0">
-                              <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                              <span className="text-xs font-bold text-highlight">
                                 {item.price.toLocaleString("vi-VN")}đ
                               </span>
                               <button
                                 type="button"
-                                onClick={() => handleRemoveSlot(item.courtId, item.slotId, item.dateStr)}
+                                onClick={() =>
+                                  handleRemoveSlot(
+                                    item.courtId,
+                                    item.slotId,
+                                    item.dateStr,
+                                  )
+                                }
                                 className="text-zinc-400 hover:text-red-500 text-xs p-1 font-bold transition-all rounded hover:bg-red-500/10"
                                 title="Xóa ô này"
                               >
@@ -830,15 +969,21 @@ export default function DetailPage() {
                       </p>
                       <div className="flex justify-between text-xs text-zinc-500 dark:text-zinc-400">
                         <span>Số ô chọn</span>
-                        <span className="font-semibold text-zinc-800 dark:text-zinc-200">{selectedSlots.length} ô</span>
+                        <span className="font-semibold text-zinc-800 dark:text-zinc-200">
+                          {selectedSlots.length} ô
+                        </span>
                       </div>
                       <div className="flex justify-between text-xs text-zinc-500 dark:text-zinc-400">
                         <span>Tổng thời lượng</span>
-                        <span className="font-semibold text-zinc-800 dark:text-zinc-200">{totalHours} giờ</span>
+                        <span className="font-semibold text-zinc-800 dark:text-zinc-200">
+                          {totalHours} giờ
+                        </span>
                       </div>
                       <div className="border-t border-emerald-100/50 dark:border-emerald-900/50 pt-2 flex justify-between items-baseline">
-                        <span className="text-xs font-extrabold text-zinc-800 dark:text-zinc-100">Tổng tiền tạm tính</span>
-                        <span className="text-lg font-black text-emerald-600 dark:text-emerald-400">
+                        <span className="text-xs font-extrabold text-zinc-800 dark:text-zinc-100">
+                          Tổng tiền tạm tính
+                        </span>
+                        <span className="text-lg font-black text-highlight">
                           {totalPrice.toLocaleString("vi-VN")}đ
                         </span>
                       </div>
@@ -852,15 +997,21 @@ export default function DetailPage() {
                       <div className="flex items-center justify-between bg-zinc-50 dark:bg-zinc-800 rounded-xl p-3 border border-zinc-100 dark:border-zinc-700">
                         <button
                           type="button"
-                          onClick={() => setGuestCount((c) => Math.max(1, c - 1))}
+                          onClick={() =>
+                            setGuestCount((c) => Math.max(1, c - 1))
+                          }
                           className="w-8 h-8 rounded-lg bg-white dark:bg-zinc-700 border border-zinc-200 dark:border-zinc-600 flex items-center justify-center text-lg font-bold text-zinc-600 dark:text-zinc-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 hover:text-emerald-500 transition-all"
                         >
                           −
                         </button>
-                        <span className="text-sm font-extrabold">{guestCount} người</span>
+                        <span className="text-sm font-extrabold">
+                          {guestCount} người
+                        </span>
                         <button
                           type="button"
-                          onClick={() => setGuestCount((c) => Math.min(12, c + 1))}
+                          onClick={() =>
+                            setGuestCount((c) => Math.min(12, c + 1))
+                          }
                           className="w-8 h-8 rounded-lg bg-white dark:bg-zinc-700 border border-zinc-200 dark:border-zinc-600 flex items-center justify-center text-lg font-bold text-zinc-600 dark:text-zinc-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 hover:text-emerald-500 transition-all"
                         >
                           +
@@ -909,7 +1060,8 @@ export default function DetailPage() {
                     </button>
 
                     <p className="text-center text-[10px] text-zinc-400 dark:text-zinc-500 leading-normal">
-                      Miễn phí hủy trước 4 giờ • Nhận giữ sân 10 phút chờ thanh toán chuyển khoản
+                      Miễn phí hủy trước 4 giờ • Nhận giữ sân 10 phút chờ thanh
+                      toán chuyển khoản
                     </p>
                   </form>
                 )}
@@ -924,7 +1076,9 @@ export default function DetailPage() {
                 >
                   <span className="text-xl">📞</span>
                   <div>
-                    <p className="text-xs text-zinc-400 dark:text-zinc-500">Gọi Hotline cơ sở</p>
+                    <p className="text-xs text-zinc-400 dark:text-zinc-500">
+                      Gọi Hotline cơ sở
+                    </p>
                     <p className="text-sm font-bold text-zinc-800 dark:text-zinc-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
                       {court.phone}
                     </p>
@@ -949,7 +1103,8 @@ export default function DetailPage() {
                 Đặt Lịch Đăng Ký Thành Công!
               </h2>
               <p className="text-xs text-zinc-400 dark:text-zinc-500 max-w-sm">
-                Chúng tôi đã tiếp nhận yêu cầu đặt lịch của bạn. Sân sẽ được giữ tạm thời trong vòng 10 phút chờ thanh toán.
+                Chúng tôi đã tiếp nhận yêu cầu đặt lịch của bạn. Sân sẽ được giữ
+                tạm thời trong vòng 10 phút chờ thanh toán.
               </p>
             </div>
 
@@ -961,23 +1116,33 @@ export default function DetailPage() {
               <div className="space-y-1.5 text-xs">
                 <div className="flex justify-between">
                   <span className="text-zinc-400">Khách hàng</span>
-                  <span className="font-semibold text-zinc-800 dark:text-zinc-200">{fullName}</span>
+                  <span className="font-semibold text-zinc-800 dark:text-zinc-200">
+                    {fullName}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-zinc-400">Số điện thoại</span>
-                  <span className="font-semibold text-zinc-800 dark:text-zinc-200">{phone}</span>
+                  <span className="font-semibold text-zinc-800 dark:text-zinc-200">
+                    {phone}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-zinc-400">Cơ sở chơi</span>
-                  <span className="font-semibold text-zinc-800 dark:text-zinc-200">{court.name}</span>
+                  <span className="font-semibold text-zinc-800 dark:text-zinc-200">
+                    {court.name}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-zinc-400">Tổng giờ chơi</span>
-                  <span className="font-semibold text-zinc-800 dark:text-zinc-200">{totalHours} giờ</span>
+                  <span className="font-semibold text-zinc-800 dark:text-zinc-200">
+                    {totalHours} giờ
+                  </span>
                 </div>
                 <div className="flex justify-between border-t border-zinc-200/50 dark:border-zinc-800/50 pt-2 font-bold">
-                  <span className="text-zinc-800 dark:text-zinc-100">Tổng thanh toán</span>
-                  <span className="text-emerald-600 dark:text-emerald-400 text-sm font-extrabold">
+                  <span className="text-zinc-800 dark:text-zinc-100">
+                    Tổng thanh toán
+                  </span>
+                  <span className="text-highlight text-sm font-extrabold">
                     {totalPrice.toLocaleString("vi-VN")}đ
                   </span>
                 </div>
@@ -990,9 +1155,16 @@ export default function DetailPage() {
                 </p>
                 <div className="max-h-[100px] overflow-y-auto space-y-1 text-[10px] scrollbar-thin">
                   {selectedSlots.map((s, idx) => (
-                    <div key={idx} className="flex justify-between text-zinc-500 dark:text-zinc-400">
-                      <span>• {s.courtName} ({s.slotLabel})</span>
-                      <span className="font-medium">{s.dateStr.split(",")[0]}</span>
+                    <div
+                      key={idx}
+                      className="flex justify-between text-zinc-500 dark:text-zinc-400"
+                    >
+                      <span>
+                        • {s.courtName} ({s.slotLabel})
+                      </span>
+                      <span className="font-medium">
+                        {s.dateStr.split(",")[0]}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -1004,7 +1176,7 @@ export default function DetailPage() {
               <p className="text-[10px] font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-widest text-center">
                 Quét QR Chuyển Khoản Nhanh
               </p>
-              
+
               {/* Mock QR Code Image container */}
               <div className="relative w-36 h-36 bg-white p-2 rounded-2xl border border-zinc-200 flex items-center justify-center shadow-md">
                 <div className="w-full h-full bg-zinc-100 flex flex-col items-center justify-center rounded-xl text-center p-2 border-2 border-dashed border-zinc-300">
@@ -1012,8 +1184,12 @@ export default function DetailPage() {
                   <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider mt-1">
                     SportHub Pay
                   </span>
-                  <span className="text-[8px] text-zinc-400 mt-0.5">Vietcombank</span>
-                  <span className="text-[8px] font-bold text-emerald-600">1023456789</span>
+                  <span className="text-[8px] text-zinc-400 mt-0.5">
+                    Vietcombank
+                  </span>
+                  <span className="text-[8px] font-bold text-emerald-600">
+                    1023456789
+                  </span>
                 </div>
               </div>
 
@@ -1021,8 +1197,11 @@ export default function DetailPage() {
                 <p className="text-[11px] font-bold text-zinc-700 dark:text-zinc-300">
                   Vietcombank • Công Ty Thể Thao SportHub
                 </p>
-                <p className="text-[10px] text-zinc-450 dark:text-zinc-500 font-medium">
-                  Cú pháp CK: <span className="font-extrabold text-emerald-600 dark:text-emerald-400">SPORTHUB {phone}</span>
+                <p className="text-[10px] text-zinc-500 dark:text-zinc-500 font-medium">
+                  Cú pháp CK:{" "}
+                  <span className="font-extrabold text-emerald-600 dark:text-emerald-400">
+                    SPORTHUB {phone}
+                  </span>
                 </p>
               </div>
             </div>
@@ -1041,8 +1220,12 @@ export default function DetailPage() {
       {/* ─── FOOTER ─────────────────────────────────────────────────────── */}
       <footer className="mt-16 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 py-8 text-center text-xs text-zinc-500 dark:text-zinc-400">
         <div className="max-w-7xl mx-auto px-4 space-y-2">
-          <p>© {new Date().getFullYear()} SportHub Pro. Đã đăng ký bản quyền.</p>
-          <p className="font-light">Được thiết kế tỉ mỉ để kết nối và thắp sáng đam mê thể thao của bạn.</p>
+          <p>
+            © {new Date().getFullYear()} SportHub Pro. Đã đăng ký bản quyền.
+          </p>
+          <p className="font-light">
+            Được thiết kế tỉ mỉ để kết nối và thắp sáng đam mê thể thao của bạn.
+          </p>
         </div>
       </footer>
     </div>
