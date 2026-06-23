@@ -6,7 +6,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/services/firebase";
+import { auth, db } from "@/services/firebase";
+import { doc, getDoc } from "firebase/firestore";
 import { loginSchema, LoginInput } from "./login-schema";
 import {
   TextField,
@@ -82,9 +83,18 @@ export default function LoginForm({ role }: LoginFormProps) {
     setIsLoading(true);
     setErrorMsg(null);
     try {
-      await signInWithEmailAndPassword(auth, data.email, data.password);
-      // Đăng nhập thành công, điều hướng user về trang phù hợp
-      router.push(role === "owner" ? "/bookings" : "/");
+      const userCredential = await signInWithEmailAndPassword(auth, data.email, data.password);
+      
+      // Đọc vai trò người dùng trực tiếp từ Firestore để điều hướng chính xác
+      const userDoc = await getDoc(doc(db, "users", userCredential.user.uid));
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        const actualRole = userData.role;
+        router.push(actualRole === "owner" ? "/bookings" : "/");
+      } else {
+        // Dự phòng (fallback) nếu không có tài liệu trên Firestore
+        router.push(role === "owner" ? "/bookings" : "/");
+      }
     } catch (err: any) {
       console.error("Firebase Login Error:", err);
       switch (err.code) {
