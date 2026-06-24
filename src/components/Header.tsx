@@ -6,7 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 
 export default function Header() {
   const pathname = usePathname();
-  const { user, loading, logout } = useAuth();
+  const { user, profile, loading, logout } = useAuth();
 
   // Hide the header completely on auth pages (login, register)
   if (pathname === "/login" || pathname === "/register") {
@@ -26,6 +26,30 @@ export default function Header() {
               Pro
             </span>
           </Link>
+          {user && profile?.role === "owner" && (
+            <nav className="hidden md:flex items-center gap-6">
+              <Link
+                href={`/owner/${user.uid}`}
+                className={`text-xs font-bold uppercase tracking-wider transition-colors ${
+                  pathname === `/owner/${user.uid}`
+                    ? "text-primary border-b-2 border-primary pb-1"
+                    : "text-zinc-550 dark:text-zinc-400 hover:text-primary"
+                }`}
+              >
+                Dashboard
+              </Link>
+              <Link
+                href="/owner/config-court"
+                className={`text-xs font-bold uppercase tracking-wider transition-colors ${
+                  pathname === "/owner/config-court"
+                    ? "text-primary border-b-2 border-primary pb-1"
+                    : "text-zinc-550 dark:text-zinc-400 hover:text-primary"
+                }`}
+              >
+                Cấu Hình Sân
+              </Link>
+            </nav>
+          )}
         </div>
 
         {/* Auth Buttons */}

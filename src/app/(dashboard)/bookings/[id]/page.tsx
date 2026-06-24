@@ -1,7 +1,10 @@
 "use client";
 
-import { useState, use } from "react";
+import { useState, use, useEffect } from "react";
 import Link from "next/link";
+import { useAuth } from "@/hooks/useAuth";
+import { db } from "@/services/firebase";
+import { collection, addDoc, doc, getDoc } from "firebase/firestore";
 
 // ─── Dynamic Mock Database of Sports Centers ─────────────────────────────────
 const premiumCourts = [
@@ -276,21 +279,28 @@ const getSlotPriceForCategory = (
   category: string,
   courtType: string,
   slotStartHour: number,
+  customBasePrice?: number,
 ) => {
   const isVIP = courtType === "VIP";
-  let basePrice = 40000; // default Badminton Standard (per 30 min)
+  let basePrice = customBasePrice ? (customBasePrice / 2) : 40000; // per 30 mins
 
-  if (category === "football") {
-    basePrice = isVIP ? 150000 : 100000;
-  } else if (category === "tennis") {
-    basePrice = isVIP ? 90000 : 70000;
-  } else if (category === "pickleball") {
-    basePrice = isVIP ? 75000 : 55000;
-  } else if (category === "basketball") {
-    basePrice = isVIP ? 70000 : 50000;
+  if (!customBasePrice) {
+    if (category === "football") {
+      basePrice = isVIP ? 150000 : 100000;
+    } else if (category === "tennis") {
+      basePrice = isVIP ? 90000 : 70000;
+    } else if (category === "pickleball") {
+      basePrice = isVIP ? 75000 : 55000;
+    } else if (category === "basketball") {
+      basePrice = isVIP ? 70000 : 50000;
+    } else {
+      // badminton & default
+      basePrice = isVIP ? 50000 : 40000;
+    }
   } else {
-    // badminton & default
-    basePrice = isVIP ? 50000 : 40000;
+    if (isVIP) {
+      basePrice = basePrice * 1.2;
+    }
   }
 
   // Peak hours (+25%) and early morning golden hour (-20%)
@@ -365,14 +375,15 @@ type Props = {
 };
 
 export default function DynamicBookingPage({ params }: Props) {
+  const { user, profile } = useAuth();
+  
   // Resolve params using React.use()
   const { id: paramId } = use(params);
-  const courtId = parseInt(paramId) || 1;
+  const courtId = parseInt(paramId);
+  const isMock = !isNaN(courtId) && courtId >= 1 && courtId <= 6;
 
-  // Find center from mock DB
-  const centerData =
-    premiumCourts.find((c) => c.id === courtId) || premiumCourts[0];
-  const subCourts = getSubCourtsForCategory(centerData.category);
+  const [customCourtData, setCustomCourtData] = useState<any | null>(null);
+  const [isLoadingCourt, setIsLoadingCourt] = useState(!isMock);
 
   // States
   const [activeImage, setActiveImage] = useState(0);
@@ -386,6 +397,121 @@ export default function DynamicBookingPage({ params }: Props) {
   const [note, setNote] = useState("");
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [highlightAvailableOnly, setHighlightAvailableOnly] = useState(false);
+
+  useEffect(() => {
+    if (!isMock) {
+      const fetchCustomCourt = async () => {
+        try {
+          setIsLoadingCourt(true);
+          const docRef = doc(db, "courts", paramId);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            
+            const categoryMap: Record<string, { name: string; icon: string }> = {
+              badminton: { name: "Cầu lông", icon: "🏸" },
+              pickleball: { name: "Pickleball", icon: "🏓" },
+              tennis: { name: "Tennis", icon: "🎾" },
+              football: { name: "Bóng đá", icon: "⚽" },
+              basketball: { name: "Bóng rổ", icon: "🏀" },
+            };
+            const catInfo = categoryMap[data.sportType] || { name: data.sportType, icon: "🏸" };
+
+            setCustomCourtData({
+              id: paramId,
+              name: data.name,
+              category: data.sportType,
+              categoryName: catInfo.name,
+              categoryIcon: catInfo.icon,
+              rating: 5.0,
+              reviewsCount: 0,
+              priceRange: `${data.pricePerHour.toLocaleString("vi-VN")}đ / giờ`,
+              image: data.imageUrl || "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&w=1200&q=80",
+              location: data.address,
+              phone: data.phone || "N/A",
+              openHours: `${data.openingTime} – ${data.closingTime}`,
+              description: data.description || "",
+              features: [
+                { icon: "⚡", label: "Sân mới hiện đại" },
+                { icon: "🅿️", label: "Bãi xe tiện lợi" },
+                { icon: "💡", label: "Đèn chiếu sáng tốt" },
+              ],
+              images: [
+                data.imageUrl || "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&w=1200&q=80"
+              ],
+              subCourts: (data.subCourts || []).map((sc: any, index: number) => ({
+                id: `${paramId}_sc_${index}`,
+                name: sc.name,
+                type: "Standard"
+              })),
+              ownerId: data.ownerId,
+              pricePerHour: data.pricePerHour,
+              active: data.active ?? false,
+            });
+          }
+        } catch (err) {
+          console.error("Error fetching custom court:", err);
+        } finally {
+          setIsLoadingCourt(false);
+        }
+      };
+      fetchCustomCourt();
+    }
+  }, [paramId, isMock]);
+
+  // Autofill contact info when logged in user is loaded
+  useEffect(() => {
+    if (profile) {
+      setFullName(profile.fullName || "");
+      setPhone(profile.phone || "");
+    }
+  }, [profile]);
+
+  // Find center from mock DB
+  const centerData = isMock
+    ? (premiumCourts.find((c) => c.id === courtId) || premiumCourts[0])
+    : customCourtData;
+
+  const subCourts = isMock
+    ? getSubCourtsForCategory(centerData?.category || "badminton")
+    : (centerData?.subCourts || []);
+
+  if (isLoadingCourt || (!isMock && !centerData)) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-zinc-50 dark:bg-background gap-3">
+        <svg className="animate-spin h-10 w-10 text-primary" fill="none" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+        </svg>
+        <p className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 animate-pulse">
+          Đang tải dữ liệu sân...
+        </p>
+      </div>
+    );
+  }
+
+  const isActive = isMock ? true : (centerData?.active ?? false);
+  const isOwner = user && centerData && user.uid === centerData.ownerId;
+
+  if (!isActive && !isOwner) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-zinc-50 dark:bg-zinc-950 p-6 text-center gap-4">
+        <span className="text-6xl">🔒</span>
+        <h1 className="text-xl sm:text-2xl font-extrabold text-zinc-900 dark:text-zinc-50">
+          Sân thể thao chưa được kích hoạt
+        </h1>
+        <p className="text-sm text-zinc-550 dark:text-zinc-400 max-w-md">
+          Cơ sở thể thao này hiện tại đang tạm ẩn hoặc chưa được kích hoạt bởi chủ sân. Vui lòng quay lại sau hoặc chọn sân khác từ trang chủ.
+        </p>
+        <Link
+          href="/"
+          className="mt-2 px-5 py-2.5 bg-primary hover:bg-primary-hover text-button-text font-bold text-xs rounded-xl shadow-md transition-all duration-200"
+        >
+          Quay lại trang chủ
+        </Link>
+      </div>
+    );
+  }
 
   // Week Dates starting from Monday of current week
   const weekDates = Array.from({ length: 7 }, (_, i) => {
@@ -454,10 +580,45 @@ export default function DynamicBookingPage({ params }: Props) {
     );
   };
 
-  const handleBookingSubmit = (e: React.FormEvent) => {
+  const [isSubmittingBooking, setIsSubmittingBooking] = useState(false);
+  const [bookingError, setBookingError] = useState<string | null>(null);
+
+  const handleBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedSlots.length === 0 || !fullName || !phone) return;
-    setIsSuccessModalOpen(true);
+    setIsSubmittingBooking(true);
+    setBookingError(null);
+    try {
+      const mockOwnerId = user?.uid || "mock-owner-id";
+      const ownerId = isMock ? mockOwnerId : (centerData.ownerId || "mock-owner-id");
+
+      await addDoc(collection(db, "bookings"), {
+        courtId: isMock ? courtId : paramId,
+        courtName: centerData.name,
+        customerName: fullName,
+        customerPhone: phone,
+        note: note || "",
+        slots: selectedSlots.map((s) => ({
+          courtId: s.courtId,
+          courtName: s.courtName,
+          slotId: s.slotId,
+          slotLabel: s.slotLabel,
+          price: s.price,
+          dateStr: s.dateStr,
+        })),
+        totalPrice: totalPrice,
+        createdAt: new Date().toISOString(),
+        ownerId: ownerId,
+        status: "confirmed",
+      });
+
+      setIsSuccessModalOpen(true);
+    } catch (err: any) {
+      console.error("Lỗi khi lưu lịch đặt sân:", err);
+      setBookingError("Không thể hoàn tất đặt sân. Vui lòng thử lại.");
+    } finally {
+      setIsSubmittingBooking(false);
+    }
   };
 
   const handleResetBooking = () => {
@@ -473,6 +634,17 @@ export default function DynamicBookingPage({ params }: Props) {
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-background text-zinc-900 dark:text-zinc-50 transition-colors duration-300">
+      {!isActive && isOwner && (
+        <div className="bg-amber-500/10 border-b border-amber-500/20 text-amber-800 dark:text-amber-400 py-3 px-4 text-center text-xs font-bold flex items-center justify-center gap-2">
+          <span>⚠️ Sân này đang ở chế độ ẩn đối với khách hàng. Chỉ có bạn (Chủ sân) mới có thể xem trang này ở chế độ xem trước.</span>
+          <Link
+            href={`/owner/config-court?id=${paramId}`}
+            className="underline hover:text-amber-900 dark:hover:text-amber-300 font-extrabold"
+          >
+            Kích hoạt ngay
+          </Link>
+        </div>
+      )}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* ─── BREADCRUMB ──────────────────────────────────────────────── */}
         <nav className="flex items-center gap-2 text-xs text-zinc-400 dark:text-zinc-500 mb-6">
@@ -532,7 +704,7 @@ export default function DynamicBookingPage({ params }: Props) {
 
               {/* Thumbnails */}
               <div className="flex gap-3 mt-3">
-                {centerData.images.map((img, i) => (
+                {centerData.images.map((img: string, i: number) => (
                   <button
                     key={i}
                     onClick={() => setActiveImage(i)}
@@ -698,7 +870,7 @@ export default function DynamicBookingPage({ params }: Props) {
                       </tr>
                     </thead>
                     <tbody>
-                      {subCourts.map((courtItem) => {
+                      {subCourts.map((courtItem: any) => {
                         return (
                           <tr
                             key={courtItem.id}
@@ -747,6 +919,7 @@ export default function DynamicBookingPage({ params }: Props) {
                                 centerData.category,
                                 courtItem.type,
                                 slot.hourNum,
+                                isMock ? undefined : centerData.pricePerHour,
                               );
 
                               return (
@@ -826,7 +999,7 @@ export default function DynamicBookingPage({ params }: Props) {
                 Tiện ích & Dịch vụ
               </h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {centerData.features.map((f, i) => (
+                {centerData.features.map((f: any, i: number) => (
                   <div
                     key={i}
                     className="flex items-center gap-3 p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-800 hover:border-primary/50 dark:hover:border-primary/50 hover:bg-primary/5 dark:hover:bg-primary/10 transition-all duration-200"
@@ -991,12 +1164,29 @@ export default function DynamicBookingPage({ params }: Props) {
                       </div>
                     </div>
 
+                    {bookingError && (
+                      <div className="p-3 text-xs font-bold text-red-500 bg-red-50/50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/40 rounded-xl">
+                        ⚠️ {bookingError}
+                      </div>
+                    )}
+
                     {/* CTA Button */}
                     <button
                       type="submit"
-                      className="w-full py-4 rounded-xl font-extrabold text-sm tracking-wide text-button-text bg-primary hover:bg-primary-hover shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
+                      disabled={isSubmittingBooking}
+                      className="w-full py-4 rounded-xl font-extrabold text-sm tracking-wide text-button-text bg-primary hover:bg-primary-hover shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-60 flex items-center justify-center gap-2"
                     >
-                      ✓ Xác Nhận Đặt Sân
+                      {isSubmittingBooking ? (
+                        <>
+                          <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                          </svg>
+                          <span>Đang đặt sân...</span>
+                        </>
+                      ) : (
+                        <span>✓ Xác Nhận Đặt Sân</span>
+                      )}
                     </button>
 
                     <p className="text-center text-[10px] text-zinc-400 dark:text-zinc-500 leading-normal">

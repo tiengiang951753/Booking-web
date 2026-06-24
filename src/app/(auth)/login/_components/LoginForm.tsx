@@ -17,7 +17,11 @@ import {
   Checkbox,
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-
+import { useMutation } from "@tanstack/react-query";
+import { authErrorMessage, authService } from "@/services/auth.service";
+import { profileService } from "@/services/profile.service";
+import { AuthError } from "firebase/auth";
+import { toast } from "sonner";
 interface LoginFormProps {
   role: "user" | "owner";
 }
@@ -63,9 +67,13 @@ export default function LoginForm({ role }: LoginFormProps) {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
-  const handleMouseDownPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handleMouseDownPassword = (
+    event: React.MouseEvent<HTMLButtonElement>,
+  ) => {
     event.preventDefault();
   };
+
+  const clearError = () => errorMsg && setErrorMsg(null);
 
   const {
     register,
@@ -79,45 +87,32 @@ export default function LoginForm({ role }: LoginFormProps) {
     },
   });
 
-  const onSubmit = async (data: LoginInput) => {
-    setIsLoading(true);
+  const loginMutation = useMutation({
+    mutationFn: authService.login,
+    onSuccess: async (userCredential) => {
+      toast.success("Đăng nhập thành công!");
+      try {
+        const profile = await profileService.getProfile(
+          userCredential.user.uid,
+        );
+        const actualRole = profile.role;
+        router.push(
+          actualRole === "owner" ? `/owner/${userCredential.user.uid}` : "/",
+        );
+      } catch (error) {
+        router.push(
+          role === "owner" ? `/owner/${userCredential.user.uid}` : "/",
+        );
+      }
+    },
+    onError: (err: AuthError) => {
+      setErrorMsg(authErrorMessage[err.code]);
+    },
+  });
+
+  const onSubmit = (data: LoginInput) => {
     setErrorMsg(null);
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, data.email, data.password);
-      
-      // Đọc vai trò người dùng trực tiếp từ Firestore để điều hướng chính xác
-      const userDoc = await getDoc(doc(db, "users", userCredential.user.uid));
-      if (userDoc.exists()) {
-        const userData = userDoc.data();
-        const actualRole = userData.role;
-        router.push(actualRole === "owner" ? "/bookings" : "/");
-      } else {
-        // Dự phòng (fallback) nếu không có tài liệu trên Firestore
-        router.push(role === "owner" ? "/bookings" : "/");
-      }
-    } catch (err: any) {
-      console.error("Firebase Login Error:", err);
-      switch (err.code) {
-        case "auth/invalid-credential":
-        case "auth/wrong-password":
-        case "auth/user-not-found":
-          setErrorMsg("Email hoặc mật khẩu không chính xác.");
-          break;
-        case "auth/invalid-email":
-          setErrorMsg("Địa chỉ email không hợp lệ.");
-          break;
-        case "auth/user-disabled":
-          setErrorMsg("Tài khoản này đã bị khóa.");
-          break;
-        case "auth/too-many-requests":
-          setErrorMsg("Quá nhiều yêu cầu thất bại. Vui lòng thử lại sau.");
-          break;
-        default:
-          setErrorMsg("Lỗi hệ thống khi đăng nhập. Vui lòng thử lại.");
-      }
-    } finally {
-      setIsLoading(false);
-    }
+    loginMutation.mutate({ email: data.email, password: data.password });
   };
 
   return (
@@ -136,7 +131,7 @@ export default function LoginForm({ role }: LoginFormProps) {
           fullWidth
           error={!!errors.email}
           helperText={errors.email?.message}
-          {...register("email")}
+          {...register("email", { onChange: clearError })}
           sx={textFieldStyles}
         />
       </div>
@@ -147,12 +142,6 @@ export default function LoginForm({ role }: LoginFormProps) {
           <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
             Mật khẩu
           </label>
-          <Link
-            href="/forgot-password"
-            className="text-xs font-semibold text-primary hover:text-primary-hover dark:text-highlight dark:hover:text-teal-400 transition-colors"
-          >
-            Quên mật khẩu?
-          </Link>
         </div>
         <TextField
           type={showPassword ? "text" : "password"}
@@ -161,7 +150,7 @@ export default function LoginForm({ role }: LoginFormProps) {
           fullWidth
           error={!!errors.password}
           helperText={errors.password?.message}
-          {...register("password")}
+          {...register("password", { onChange: clearError })}
           slotProps={{
             input: {
               endAdornment: (
@@ -186,6 +175,12 @@ export default function LoginForm({ role }: LoginFormProps) {
           }}
           sx={textFieldStyles}
         />
+        <Link
+          href="/forgot-password"
+          className="text-right block mt-1 text-xs font-semibold text-primary hover:text-primary-hover dark:text-highlight dark:hover:text-teal-400 transition-colors"
+        >
+          Quên mật khẩu?
+        </Link>
       </div>
 
       {/* Remember Me checkbox */}

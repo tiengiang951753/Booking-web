@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth, db } from "@/services/firebase";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, collection, addDoc } from "firebase/firestore";
 import { registerSchema, RegisterInput } from "./register-schema";
 
 interface RegisterFormProps {
@@ -71,6 +71,26 @@ export default function RegisterForm({ role }: RegisterFormProps) {
           sportType: data.sportType,
         }),
       });
+
+      // 4. Nếu là chủ sân, tự động khởi tạo 1 sân trống ban đầu
+      if (data.role === "owner") {
+        await addDoc(collection(db, "courts"), {
+          name: data.businessName || "Sân thể thao mới",
+          sportType: data.sportType || "badminton",
+          address: data.businessAddress || "",
+          pricePerHour: 50000,
+          openingTime: "06:00",
+          closingTime: "22:00",
+          subCourtsCount: 1,
+          subCourts: [{ name: "Sân số 1" }],
+          description: "Chưa có mô tả chi tiết.",
+          imageUrl: "",
+          ownerId: userCredential.user.uid,
+          ownerName: data.fullName,
+          active: false,
+          createdAt: new Date().toISOString(),
+        });
+      }
 
       console.log("Đăng ký thành công!", {
         uid: userCredential.user.uid,

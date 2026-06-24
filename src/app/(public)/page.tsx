@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { db } from "@/services/firebase";
+import { collection, getDocs, query, where } from "firebase/firestore";
 
 // Sports categories for filtering
 const categories = [
@@ -124,9 +126,40 @@ const premiumCourts = [
 export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [customCourts, setCustomCourts] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchCustomCourts = async () => {
+      try {
+        const q = query(collection(db, "courts"), where("active", "==", true));
+        const snap = await getDocs(q);
+        const list = snap.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            name: data.name,
+            category: data.sportType,
+            rating: 5.0,
+            reviews: 0,
+            price: `${data.pricePerHour.toLocaleString("vi-VN")}đ / giờ`,
+            image: data.imageUrl || "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&w=800&q=80",
+            location: data.address,
+            features: [`Sân con: ${data.subCourtsCount}`, "Đặt lịch nhanh", "Đèn chiếu sáng"],
+            popular: false,
+          };
+        });
+        setCustomCourts(list);
+      } catch (err) {
+        console.error("Error loading custom courts:", err);
+      }
+    };
+    fetchCustomCourts();
+  }, []);
+
+  const combinedCourts = [...premiumCourts, ...customCourts];
 
   // Filtering courts based on category and search query
-  const filteredCourts = premiumCourts.filter((court) => {
+  const filteredCourts = combinedCourts.filter((court) => {
     const matchesCategory =
       selectedCategory === "all" || court.category === selectedCategory;
     const matchesSearch =
@@ -307,7 +340,7 @@ export default function Home() {
 
                       {/* Tags / Features */}
                       <div className="flex flex-wrap gap-1.5 pt-1">
-                        {court.features.map((feat, idx) => (
+                        {court.features.map((feat: string, idx: number) => (
                           <span
                             key={idx}
                             className="px-2.5 py-0.5 rounded-lg bg-primary/5 text-primary border border-primary/20 dark:bg-primary/10 dark:text-highlight dark:border-primary/30 text-xs font-semibold transition-all duration-300"
