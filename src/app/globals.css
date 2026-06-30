@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -27,18 +29,16 @@
   --color-button-text: var(--button-text);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0B191B;
-    --foreground: #ededed;
-    color-scheme: dark;
-    --scrollbar-track: #18181b;
-    --scrollbar-thumb: rgba(156, 163, 175, 0.5);
-    --input-bg: #18181b;
-    --input-border: #27272a;
-    --input-border-focus: var(--highlight);
-    --text-muted: #a1a1aa;
-  }
+.dark {
+  --background: #0B191B;
+  --foreground: #ededed;
+  color-scheme: dark;
+  --scrollbar-track: #18181b;
+  --scrollbar-thumb: rgba(156, 163, 175, 0.5);
+  --input-bg: #18181b;
+  --input-border: #27272a;
+  --input-border-focus: var(--highlight);
+  --text-muted: #a1a1aa;
 }
 
 @layer base {

@@ -5,12 +5,13 @@ import Link from "next/link";
 import AuthBanner from "@/components/AuthBanner";
 import LoginForm from "./_components/LoginForm";
 import { ToggleButtonGroup, ToggleButton } from "@mui/material";
+import ThemeToggle from "@/components/ThemeToggle";
 
 export default function LoginPage() {
   const [role, setRole] = useState<"user" | "owner">("user");
 
   return (
-    <div className="min-h-screen flex bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-50 transition-colors duration-300">
+    <div className="min-h-screen flex bg-zinc-50 dark:bg-zinc-950 text-primary dark:text-zinc-50 transition-colors duration-300">
       {/* LEFT COLUMN: VISUAL BRANDING BANNER */}
       <AuthBanner
         badge="🏸 Đồng hành cùng đam mê thể thao"
@@ -39,7 +40,12 @@ export default function LoginPage() {
       </AuthBanner>
 
       {/* RIGHT COLUMN: INTERACTIVE FORM CONTAINER */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 md:p-16">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 md:p-16 relative">
+        {/* Floating Theme Toggle */}
+        <div className="absolute top-4 right-4 sm:top-8 sm:right-8">
+          <ThemeToggle />
+        </div>
+
         <div className="w-full max-w-md space-y-8">
           {/* Mobile brand header (Visible only on mobile/tablet) */}
           <div className="lg:hidden text-center space-y-2">

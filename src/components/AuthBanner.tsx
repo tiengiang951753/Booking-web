@@ -42,7 +42,7 @@ export default function AuthBanner({
           {title}
         </h2>
 
-        <p className="text-emerald-100/85 text-base font-light leading-relaxed">
+        <p className="text-emerald-100/85 text-white font-light leading-relaxed">
           {subtitle}
         </p>
 

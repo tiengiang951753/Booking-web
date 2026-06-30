@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
+import ThemeToggle from "@/components/ThemeToggle";
 
 export default function Header() {
   const pathname = usePathname();
@@ -54,6 +55,7 @@ export default function Header() {
 
         {/* Auth Buttons */}
         <div className="flex items-center gap-4">
+          <ThemeToggle />
           {loading ? (
             <div className="h-8 w-20 animate-pulse bg-zinc-200 dark:bg-zinc-800 rounded-full" />
           ) : user ? (

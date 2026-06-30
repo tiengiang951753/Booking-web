@@ -5,6 +5,7 @@ import Link from "next/link";
 import AuthBanner from "@/components/AuthBanner";
 import { ToggleButtonGroup, ToggleButton } from "@mui/material";
 import RegisterForm from "./_components/RegisterForm";
+import ThemeToggle from "@/components/ThemeToggle";
 
 export default function RegisterPage() {
   const [role, setRole] = useState<"user" | "owner">("user");
@@ -36,7 +37,12 @@ export default function RegisterPage() {
       </AuthBanner>
 
       {/* RIGHT COLUMN: INTERACTIVE FORM CONTAINER */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 md:p-16">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 md:p-16 relative">
+        {/* Floating Theme Toggle */}
+        <div className="absolute top-4 right-4 sm:top-8 sm:right-8">
+          <ThemeToggle />
+        </div>
+
         <div className="w-full max-w-md space-y-7">
           
           {/* Mobile brand header (Visible only on mobile/tablet) */}
