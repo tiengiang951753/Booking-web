@@ -14,6 +14,19 @@ export default function Header() {
     return null;
   }
 
+  const categoryConfig = [
+    {
+      name: "Dashboard",
+      link: `/owner/${user?.uid}`,
+      isSelected: pathname === `/owner/${user?.uid}`,
+    },
+    {
+      name: "Quản lý sân",
+      link: "/owner/config-court",
+      isSelected: pathname === "/owner/config-court",
+    },
+  ];
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-zinc-200/80 dark:border-zinc-800/80 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -29,26 +42,19 @@ export default function Header() {
           </Link>
           {user && profile?.role === "owner" && (
             <nav className="hidden md:flex items-center gap-6">
-              <Link
-                href={`/owner/${user.uid}`}
-                className={`text-xs font-bold uppercase tracking-wider transition-colors ${
-                  pathname === `/owner/${user.uid}`
-                    ? "text-primary border-b-2 border-primary pb-1"
-                    : "text-zinc-550 dark:text-zinc-400 hover:text-primary"
-                }`}
-              >
-                Dashboard
-              </Link>
-              <Link
-                href="/owner/config-court"
-                className={`text-xs font-bold uppercase tracking-wider transition-colors ${
-                  pathname === "/owner/config-court"
-                    ? "text-primary border-b-2 border-primary pb-1"
-                    : "text-zinc-550 dark:text-zinc-400 hover:text-primary"
-                }`}
-              >
-                Cấu Hình Sân
-              </Link>
+              {categoryConfig.map((item) => (
+                <Link
+                  key={item.link}
+                  href={item.link}
+                  className={`text-xs font-bold uppercase tracking-wider transition-colors ${
+                    item.isSelected
+                      ? "text-primary"
+                      : "text-zinc-550 dark:text-zinc-400 hover:text-primary"
+                  }`}
+                >
+                  {item.name}
+                </Link>
+              ))}
             </nav>
           )}
         </div>
@@ -61,7 +67,10 @@ export default function Header() {
           ) : user ? (
             <div className="flex items-center gap-3.5">
               <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                Chào, <strong className="font-semibold text-zinc-900 dark:text-zinc-50">{user.displayName || user.email}</strong>
+                Chào,{" "}
+                <strong className="font-semibold text-zinc-900 dark:text-zinc-50">
+                  {user.displayName || user.email}
+                </strong>
               </span>
               <button
                 onClick={logout}
