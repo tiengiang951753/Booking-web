@@ -60,8 +60,11 @@ export const CommonTextField = forwardRef<HTMLDivElement, CommonTextFieldProps>(
             position="start"
             sx={{
               color: "var(--foreground, #171717)",
-              fontWeight: "semibold",
-              fontSize: "0.875rem",
+              "& .MuiTypography-root": {
+                color: "inherit",
+                fontWeight: "semibold",
+                fontSize: "0.875rem",
+              },
             }}
           >
             {leftIcon || prefix}
@@ -74,8 +77,11 @@ export const CommonTextField = forwardRef<HTMLDivElement, CommonTextFieldProps>(
             position="end"
             sx={{
               color: "var(--foreground, #171717)",
-              fontWeight: "semibold",
-              fontSize: "0.875rem",
+              "& .MuiTypography-root": {
+                color: "inherit",
+                fontWeight: "semibold",
+                fontSize: "0.875rem",
+              },
             }}
           >
             {rightIcon || suffix}
