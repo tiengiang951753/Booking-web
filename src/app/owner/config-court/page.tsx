@@ -21,6 +21,8 @@ import { db } from "@/services/firebase";
 import { useAuth } from "@/hooks/useAuth";
 import { courtSchema, CourtInput } from "./_components/court-schema";
 import CourtForm from "./_components/CourtForm";
+import { CommonSelect } from "@/components/common";
+import { toast } from "sonner";
 
 function ConfigCourtForm() {
   const router = useRouter();
@@ -33,8 +35,16 @@ function ConfigCourtForm() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [courts, setCourts] = useState<any[]>([]);
   const [loadingCourts, setLoadingCourts] = useState(true);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const action = searchParams.get("action");
+  const isCreateModalOpen = action === "create-court";
   const [loadedCourtId, setLoadedCourtId] = useState<string | null>(null);
+
+  const handleCloseCreateModal = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("action");
+    const searchStr = params.toString();
+    router.push(`/owner/config-court${searchStr ? `?${searchStr}` : ""}`);
+  };
 
   // Form cho Chỉnh sửa sân (Inline)
   const editForm = useForm<CourtInput>({
@@ -194,7 +204,7 @@ function ConfigCourtForm() {
   //         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
   //         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
   //       </svg>
-  //       <p className="text-sm font-semibold text-zinc-555 dark:text-zinc-400 animate-pulse">
+  //       <p className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 animate-pulse">
   //         {isLoadingData ? "Đang tải cấu hình sân..." : "Đang xác thực thông tin tài khoản..."}
   //       </p>
   //     </div>
@@ -243,7 +253,7 @@ function ConfigCourtForm() {
 
       const docRef = doc(db, "courts", courtId);
       await updateDoc(docRef, courtPayload);
-      alert("Cập nhật thông tin sân thành công!");
+      toast.success("Cập nhật thông tin sân thành công!");
 
       // Tải lại danh sách sân để hiển thị tên mới nếu có thay đổi
       await fetchAllCourts();
@@ -289,10 +299,9 @@ function ConfigCourtForm() {
       };
 
       const docRef = await addDoc(collection(db, "courts"), courtPayload);
-      alert("Tạo thông tin sân thể thao thành công!");
+      toast.success("Tạo thông tin sân thể thao thành công!");
 
-      // Đóng modal và reset form tạo mới
-      setIsCreateModalOpen(false);
+      // Reset form tạo mới
       createForm.reset();
 
       // Tải lại danh sách sân
@@ -313,11 +322,11 @@ function ConfigCourtForm() {
     : false;
 
   return (
-    <main className="flex-1 py-10 px-4 sm:px-6 lg:px-8 bg-zinc-50 dark:bg-zinc-955 transition-colors duration-300">
+    <main className="flex-1 py-10 px-4 sm:px-6 lg:px-8 bg-zinc-50 dark:bg-zinc-950 transition-colors duration-300">
       <div className="max-w-3xl mx-auto space-y-8">
         {/* Breadcrumbs & Header */}
         <div className="space-y-2">
-          <div className="flex items-center gap-2 text-xs font-semibold text-zinc-555 dark:text-zinc-400">
+          <div className="flex items-center gap-2 text-xs font-semibold text-zinc-500 dark:text-zinc-400">
             <Link href="/" className="hover:text-primary transition-colors">
               Trang chủ
             </Link>
@@ -353,7 +362,9 @@ function ConfigCourtForm() {
                   imageUrl: "",
                   active: false,
                 });
-                setIsCreateModalOpen(true);
+                const params = new URLSearchParams(searchParams.toString());
+                params.set("action", "create-court");
+                router.push(`/owner/config-court?${params.toString()}`);
               }}
               className="px-4 py-2.5 bg-primary hover:bg-primary-hover text-button-text font-bold text-xs rounded-xl shadow-md shadow-primary/10 hover:shadow-lg transition-all duration-200 flex items-center gap-1.5 cursor-pointer"
             >
@@ -382,56 +393,40 @@ function ConfigCourtForm() {
           {loadingCourts ? (
             <div className="h-10 w-full rounded-xl bg-zinc-100 dark:bg-zinc-800/50 animate-pulse" />
           ) : courts.length === 0 ? (
-            <div className="p-3.5 text-xs text-zinc-650 dark:text-zinc-455 bg-amber-500/10 dark:bg-amber-955/20 border border-amber-200/50 dark:border-amber-900/30 rounded-xl font-bold flex items-center gap-2">
+            <div className="p-3.5 text-xs text-zinc-600 dark:text-zinc-400 bg-amber-500/10 dark:bg-amber-950/20 border border-amber-200/50 dark:border-amber-900/30 rounded-xl font-bold flex items-center gap-2">
               <span>
                 ⚠️ Hiện tại chưa có sân nào được tạo, xin vui lòng chọn vào thêm
                 mới để tạo sân
               </span>
             </div>
           ) : (
-            <div className="relative">
-              <select
-                value={courtId || ""}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  if (val) {
-                    router.push(`/owner/config-court?id=${val}`);
-                  } else {
-                    router.push("/owner/config-court");
-                  }
-                }}
-                className="w-full text-sm p-3 pr-10 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/40 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all dark:text-zinc-100 font-semibold cursor-pointer appearance-none"
-              >
-                <option
-                  value=""
-                  disabled
-                  className="text-zinc-400 dark:text-zinc-500 font-normal"
-                >
-                  -- Chọn sân cần cấu hình --
-                </option>
-                {courts.map((court) => (
-                  <option
-                    key={court.id}
-                    value={court.id}
-                    className="text-zinc-850 dark:text-zinc-200"
-                  >
-                    {court.name}{" "}
-                    {court.sportType
-                      ? `(${court.sportType === "badminton" ? "Cầu lông" : court.sportType === "football" ? "Bóng đá" : court.sportType === "tennis" ? "Tennis" : court.sportType === "basketball" ? "Bóng rổ" : court.sportType === "pickleball" ? "Pickleball" : court.sportType})`
-                      : ""}
-                  </option>
-                ))}
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-zinc-400 dark:text-zinc-500">
-                <svg
-                  className="fill-current h-4 w-4"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
-                </svg>
-              </div>
-            </div>
+            <CommonSelect
+              value={courtId || ""}
+              onChange={(e) => {
+                const val = e.target.value as string;
+                if (val) {
+                  router.push(`/owner/config-court?id=${val}`);
+                } else {
+                  router.push("/owner/config-court");
+                }
+              }}
+              options={[
+                {
+                  value: "",
+                  label: "-- Chọn sân cần cấu hình --",
+                  disabled: true,
+                },
+                ...courts.map((court) => ({
+                  value: court.id,
+                  label: `${court.name} ${court.sportType ? `(${court.sportType === "badminton" ? "Cầu lông" : court.sportType === "football" ? "Bóng đá" : court.sportType === "tennis" ? "Tennis" : court.sportType === "basketball" ? "Bóng rổ" : court.sportType === "pickleball" ? "Pickleball" : court.sportType})` : ""}`,
+                })),
+              ]}
+              slotProps={{
+                select: {
+                  displayEmpty: true,
+                } as any,
+              }}
+            />
           )}
         </div>
 
@@ -462,7 +457,7 @@ function ConfigCourtForm() {
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   />
                 </svg>
-                <p className="text-xs font-semibold text-zinc-555 dark:text-zinc-400 mt-2 animate-pulse">
+                <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 mt-2 animate-pulse">
                   Đang tải thông tin sân...
                 </p>
               </div>
@@ -482,14 +477,14 @@ function ConfigCourtForm() {
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity duration-300">
             <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
               {/* Header */}
-              <div className="p-6 border-b border-zinc-150 dark:border-zinc-850 flex items-center justify-between">
+              <div className="p-6 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
                 <h2 className="text-lg font-black text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
-                  ➕ Thêm Sân Thể Thao Mới
+                  Thêm Sân Thể Thao Mới
                 </h2>
                 <button
                   type="button"
-                  onClick={() => setIsCreateModalOpen(false)}
-                  className="p-2 text-zinc-400 hover:text-zinc-650 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition-all cursor-pointer"
+                  onClick={handleCloseCreateModal}
+                  className="p-2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition-all cursor-pointer"
                 >
                   <CloseIcon className="w-5 h-5" />
                 </button>
@@ -501,7 +496,7 @@ function ConfigCourtForm() {
                   form={createForm}
                   onSubmit={onCreateSubmit}
                   isSubmitting={isSubmitting}
-                  onCancel={() => setIsCreateModalOpen(false)}
+                  onCancel={handleCloseCreateModal}
                   submitText="Tạo sân mới"
                 />
               </div>
@@ -537,7 +532,7 @@ export default function ConfigCourtPage() {
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             />
           </svg>
-          <p className="text-sm font-semibold text-zinc-555 dark:text-zinc-400">
+          <p className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">
             Đang tải thiết lập...
           </p>
         </div>

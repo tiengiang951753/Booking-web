@@ -1238,7 +1238,7 @@ export default function DynamicBookingPage({ params }: Props) {
             </div>
 
             {/* Receipt Summary */}
-            <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-150 dark:border-zinc-850 rounded-2xl p-4 space-y-3">
+            <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 space-y-3">
               <p className="text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest border-b border-zinc-100 dark:border-zinc-800 pb-1">
                 Chi tiết phiếu đặt
               </p>

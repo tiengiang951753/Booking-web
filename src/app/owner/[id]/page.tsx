@@ -797,7 +797,7 @@ export default function OwnerDashboardPage({ params }: Props) {
                   <select
                     value={selectedCourtId}
                     onChange={(e) => setSelectedCourtId(e.target.value)}
-                    className="text-xs p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-850 bg-white dark:bg-zinc-950 focus:border-primary outline-none transition-all dark:text-zinc-100 font-semibold shadow-sm"
+                    className="text-xs p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 focus:border-primary outline-none transition-all dark:text-zinc-100 font-semibold shadow-sm"
                   >
                     {managedCourts.map((c) => (
                       <option key={c.id} value={c.id}>
@@ -841,7 +841,7 @@ export default function OwnerDashboardPage({ params }: Props) {
                         className={`flex flex-col items-center gap-1 py-2.5 px-2 rounded-2xl border transition-all duration-200 relative ${
                           isSelected
                             ? "bg-primary border-primary-hover text-white shadow-md scale-[1.01]"
-                            : "bg-zinc-50 dark:bg-zinc-900/40 border-zinc-200/50 dark:border-zinc-800/80 text-zinc-650 dark:text-zinc-300 hover:bg-zinc-100 hover:border-zinc-300 dark:hover:bg-zinc-850"
+                            : "bg-zinc-50 dark:bg-zinc-900/40 border-zinc-200/50 dark:border-zinc-800/80 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 hover:border-zinc-300 dark:hover:bg-zinc-800"
                         }`}
                       >
                         {isToday && (
@@ -890,18 +890,18 @@ export default function OwnerDashboardPage({ params }: Props) {
                             <th
                               key={i}
                               colSpan={2}
-                              className="px-2 py-3 text-center border-r border-zinc-200 dark:border-zinc-800 w-[120px] min-w-[120px] font-extrabold text-zinc-850 dark:text-zinc-200"
+                              className="px-2 py-3 text-center border-r border-zinc-200 dark:border-zinc-800 w-[120px] min-w-[120px] font-extrabold text-zinc-800 dark:text-zinc-200"
                             >
                               {hourStr}
                             </th>
                           );
                         })}
                       </tr>
-                      <tr className="bg-zinc-50/50 dark:bg-zinc-950 text-[8px] font-bold text-zinc-450 border-b border-zinc-200 dark:border-zinc-850">
+                      <tr className="bg-zinc-50/50 dark:bg-zinc-950 text-[8px] font-bold text-zinc-400 border-b border-zinc-200 dark:border-zinc-800">
                         {TIME_SLOTS.map((slot) => (
                           <th
                             key={slot.id}
-                            className={`px-1 py-1 text-center border-r border-zinc-200 dark:border-zinc-850 w-[60px] min-w-[60px] ${
+                            className={`px-1 py-1 text-center border-r border-zinc-200 dark:border-zinc-800 w-[60px] min-w-[60px] ${
                               slot.isPeak
                                 ? "text-amber-500 bg-amber-500/5 font-extrabold"
                                 : ""
@@ -916,12 +916,12 @@ export default function OwnerDashboardPage({ params }: Props) {
                       {selectedCourt.subCourts.map((courtItem: any) => (
                         <tr
                           key={courtItem.id}
-                          className="hover:bg-zinc-50/30 dark:hover:bg-zinc-900/10 border-b border-zinc-100 dark:border-zinc-850 last:border-0"
+                          className="hover:bg-zinc-50/30 dark:hover:bg-zinc-900/10 border-b border-zinc-100 dark:border-zinc-800 last:border-0"
                         >
                           {/* Subcourt Name Column */}
-                          <td className="sticky left-0 z-20 bg-white dark:bg-zinc-950 px-4 py-3.5 border-r border-zinc-200 dark:border-zinc-850 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)]">
+                          <td className="sticky left-0 z-20 bg-white dark:bg-zinc-950 px-4 py-3.5 border-r border-zinc-200 dark:border-zinc-800 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)]">
                             <div className="flex flex-col">
-                              <span className="text-xs font-extrabold text-zinc-800 dark:text-zinc-250 truncate w-[130px]">
+                              <span className="text-xs font-extrabold text-zinc-800 dark:text-zinc-200 truncate w-[130px]">
                                 {courtItem.name}
                               </span>
                               <span className="text-[9px] text-zinc-400 mt-0.5">
@@ -940,7 +940,7 @@ export default function OwnerDashboardPage({ params }: Props) {
                             return (
                               <td
                                 key={slot.id}
-                                className="p-1 border-r border-zinc-100 dark:border-zinc-850 last:border-r-0 align-middle"
+                                className="p-1 border-r border-zinc-100 dark:border-zinc-800 last:border-r-0 align-middle"
                               >
                                 {bookingCell ? (
                                   bookingCell.status === "pending" ? (
@@ -958,7 +958,8 @@ export default function OwnerDashboardPage({ params }: Props) {
                                   ) : (
                                     <div
                                       title={`Khách: ${bookingCell.customerName}\nSĐT: ${bookingCell.customerPhone}\nTrạng thái: ĐÃ DUYỆT\nGiá: ${bookingCell.price.toLocaleString("vi-VN")}đ\nGhi chú: ${bookingCell.note || "Không"}`}
-                                      className="h-10 w-full rounded p-1 flex flex-col justify-center items-center gap-0.5 border border-emerald-250 dark:border-emerald-800 bg-emerald-500/10 dark:bg-emerald-955/20 text-emerald-700 dark:text-emerald-400 select-none cursor-pointer hover:bg-emerald-500/20 transition-all text-center"
+                                      className="h-10 w-full rounded p-1 flex flex-col justify-center items-center gap-0.5 border border-emerald-200 dark:border-emerald-800 bg-emerald-500/10 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 select-none cursor-pointer hover:bg-emerald-500/20 transition-all text-center"
+                                    >
                                     >
                                       <span className="text-[8px] font-black tracking-tight truncate w-full">
                                         {bookingCell.customerName}

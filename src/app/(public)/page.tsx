@@ -264,7 +264,7 @@ export default function Home() {
                     className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-semibold tracking-wide transition-all duration-300 active:scale-95 ${
                       isActive
                         ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 shadow-lg shadow-zinc-950/15"
-                        : "bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 hover:border-zinc-300 dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-850"
+                        : "bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 hover:border-zinc-300 dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-800"
                     }`}
                   >
                     <span

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
+import { toast } from "sonner";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -9,6 +10,7 @@ import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth, db } from "@/services/firebase";
 import { doc, setDoc, collection, addDoc } from "firebase/firestore";
 import { registerSchema, RegisterInput } from "./register-schema";
+import { CommonTextField, CommonSelect } from "@/components/common";
 
 interface RegisterFormProps {
   role: "user" | "owner";
@@ -23,6 +25,7 @@ export default function RegisterForm({ role }: RegisterFormProps) {
     register,
     handleSubmit,
     setValue,
+    control,
     formState: { errors },
   } = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
@@ -104,7 +107,7 @@ export default function RegisterForm({ role }: RegisterFormProps) {
         }),
       });
 
-      alert(`Đăng ký thành công tài khoản: ${data.role === "user" ? "Khách hàng" : "Chủ sân"}`);
+      toast.success(`Đăng ký thành công tài khoản: ${data.role === "user" ? "Khách hàng" : "Chủ sân"}`);
       
       // Chuyển hướng người dùng về trang chủ
       router.push("/");
@@ -132,140 +135,104 @@ export default function RegisterForm({ role }: RegisterFormProps) {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       
       {/* Input Full Name */}
-      <div className="space-y-1.5">
-        <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-          {role === "user" ? "Họ và tên khách hàng" : "Họ và tên chủ cơ sở"}
-        </label>
-        <input
-          type="text"
-          {...register("fullName")}
-          placeholder={role === "user" ? "Nguyễn Văn A" : "Phạm Hoàng B"}
-          className="w-full text-xs p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all dark:text-zinc-100"
-        />
-        {errors.fullName && (
-          <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.fullName.message}</p>
-        )}
-      </div>
+      <CommonTextField
+        size="small"
+        label={role === "user" ? "Họ và tên khách hàng" : "Họ và tên chủ cơ sở"}
+        error={!!errors.fullName}
+        helperText={errors.fullName?.message}
+        {...register("fullName")}
+        placeholder={role === "user" ? "Nguyễn Văn A" : "Phạm Hoàng B"}
+      />
 
       {/* Dynamic Fields for Owner Role */}
       {role === "owner" && (
         <>
           {/* Business Name */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-              Tên cơ sở / Câu lạc bộ
-            </label>
-            <input
-              type="text"
-              {...register("businessName")}
-              placeholder="Ví dụ: Câu Lạc Bộ Cầu Lông Him Lam"
-              className="w-full text-xs p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all dark:text-zinc-100"
-            />
-            {errors.businessName && (
-              <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.businessName.message}</p>
-            )}
-          </div>
+          <CommonTextField
+            size="small"
+            label="Tên cơ sở / Câu lạc bộ"
+            error={!!errors.businessName}
+            helperText={errors.businessName?.message}
+            {...register("businessName")}
+            placeholder="Ví dụ: Câu Lạc Bộ Cầu Lông Him Lam"
+          />
 
           {/* Sport Type Select */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-              Môn thể thao hoạt động chính
-            </label>
-            <select
-              {...register("sportType")}
-              className="w-full text-xs p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all dark:text-zinc-100"
-            >
-              <option value="badminton">Cầu lông (🏸)</option>
-              <option value="pickleball">Pickleball (🏓)</option>
-              <option value="tennis">Tennis (🎾)</option>
-              <option value="football">Bóng đá (⚽)</option>
-              <option value="basketball">Bóng rổ (🏀)</option>
-            </select>
-            {errors.sportType && (
-              <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.sportType.message}</p>
+          <Controller
+            name="sportType"
+            control={control}
+            render={({ field }) => (
+              <CommonSelect
+                size="small"
+                label="Môn thể thao hoạt động chính"
+                error={!!errors.sportType}
+                helperText={errors.sportType?.message}
+                {...field}
+                options={[
+                  { value: "badminton", label: "Cầu lông (🏸)" },
+                  { value: "pickleball", label: "Pickleball (🏓)" },
+                  { value: "tennis", label: "Tennis (🎾)" },
+                  { value: "football", label: "Bóng đá (⚽)" },
+                  { value: "basketball", label: "Bóng rổ (🏀)" },
+                ]}
+              />
             )}
-          </div>
+          />
 
           {/* Business Address */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-              Địa chỉ cơ sở sân
-            </label>
-            <input
-              type="text"
-              {...register("businessAddress")}
-              placeholder="Số, tên đường, quận, thành phố..."
-              className="w-full text-xs p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all dark:text-zinc-100"
-            />
-            {errors.businessAddress && (
-              <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.businessAddress.message}</p>
-            )}
-          </div>
+          <CommonTextField
+            size="small"
+            label="Địa chỉ cơ sở sân"
+            error={!!errors.businessAddress}
+            helperText={errors.businessAddress?.message}
+            {...register("businessAddress")}
+            placeholder="Số, tên đường, quận, thành phố..."
+          />
         </>
       )}
 
       {/* Common Contact Fields (Email & Phone) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-        <div className="space-y-1.5">
-          <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-            Email
-          </label>
-          <input
-            type="email"
-            {...register("email")}
-            placeholder="partner@sporthub.vn"
-            className="w-full text-xs p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all dark:text-zinc-100"
-          />
-          {errors.email && (
-            <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.email.message}</p>
-          )}
-        </div>
-        <div className="space-y-1.5">
-          <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-            Số điện thoại
-          </label>
-          <input
-            type="tel"
-            {...register("phone")}
-            placeholder="09..."
-            className="w-full text-xs p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all dark:text-zinc-100"
-          />
-          {errors.phone && (
-            <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.phone.message}</p>
-          )}
-        </div>
+        <CommonTextField
+          size="small"
+          type="email"
+          label="Email"
+          error={!!errors.email}
+          helperText={errors.email?.message}
+          {...register("email")}
+          placeholder="partner@sporthub.vn"
+        />
+        <CommonTextField
+          size="small"
+          type="tel"
+          label="Số điện thoại"
+          error={!!errors.phone}
+          helperText={errors.phone?.message}
+          {...register("phone")}
+          placeholder="09..."
+        />
       </div>
 
       {/* Passwords Fields */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-        <div className="space-y-1.5">
-          <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-            Mật khẩu
-          </label>
-          <input
-            type="password"
-            {...register("password")}
-            placeholder="••••••••"
-            className="w-full text-xs p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all dark:text-zinc-100"
-          />
-          {errors.password && (
-            <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.password.message}</p>
-          )}
-        </div>
-        <div className="space-y-1.5">
-          <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-            Xác nhận lại
-          </label>
-          <input
-            type="password"
-            {...register("confirmPassword")}
-            placeholder="••••••••"
-            className="w-full text-xs p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all dark:text-zinc-100"
-          />
-          {errors.confirmPassword && (
-            <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.confirmPassword.message}</p>
-          )}
-        </div>
+        <CommonTextField
+          size="small"
+          type="password"
+          label="Mật khẩu"
+          error={!!errors.password}
+          helperText={errors.password?.message}
+          {...register("password")}
+          placeholder="••••••••"
+        />
+        <CommonTextField
+          size="small"
+          type="password"
+          label="Xác nhận lại"
+          error={!!errors.confirmPassword}
+          helperText={errors.confirmPassword?.message}
+          {...register("confirmPassword")}
+          placeholder="••••••••"
+        />
       </div>
 
       {/* Checkbox Accept terms */}

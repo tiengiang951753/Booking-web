@@ -447,7 +447,7 @@ export default function DetailPage() {
             <section className="bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200/60 dark:border-zinc-800/60 p-6 shadow-sm space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-zinc-100 dark:border-zinc-800 pb-5">
                 <div>
-                  <h2 className="text-xl font-black tracking-tight text-zinc-850 dark:text-zinc-50">
+                  <h2 className="text-xl font-black tracking-tight text-zinc-800 dark:text-zinc-50">
                     Bảng Lịch Đặt Sân Trực Tuyến
                   </h2>
                   <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
@@ -542,7 +542,7 @@ export default function DetailPage() {
               </div>
 
               {/* Responsive Scrollable Schedule Grid */}
-              <div className="relative border border-zinc-250 dark:border-zinc-850 rounded-2xl overflow-hidden bg-white dark:bg-zinc-900 shadow-sm">
+              <div className="relative border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden bg-white dark:bg-zinc-900 shadow-sm">
                 <div className="overflow-x-auto scrollbar-thin">
                   <table className="w-full border-collapse border-spacing-0 table-fixed">
                     <thead>
@@ -550,7 +550,7 @@ export default function DetailPage() {
                       <tr className="bg-zinc-100 dark:bg-zinc-800 text-[10px] md:text-[11px] font-bold text-zinc-500 dark:text-zinc-400 border-b border-zinc-200 dark:border-zinc-700">
                         <th
                           rowSpan={2}
-                          className="sticky left-0 z-30 bg-zinc-100 dark:bg-zinc-850 px-4 py-3 text-left w-[150px] min-w-[150px] border-r border-zinc-200 dark:border-zinc-700 font-extrabold shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] align-middle"
+                          className="sticky left-0 z-30 bg-zinc-100 dark:bg-zinc-800 px-4 py-3 text-left w-[150px] min-w-[150px] border-r border-zinc-200 dark:border-zinc-700 font-extrabold shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] align-middle"
                         >
                           Sân Đặt
                         </th>
@@ -570,7 +570,7 @@ export default function DetailPage() {
                         })}
                       </tr>
                       {/* Second Header Row: 30-min intervals */}
-                      <tr className="bg-zinc-50 dark:bg-zinc-900 text-[9px] font-bold text-zinc-500 dark:text-zinc-500 border-b border-zinc-200 dark:border-zinc-850">
+                      <tr className="bg-zinc-50 dark:bg-zinc-900 text-[9px] font-bold text-zinc-500 dark:text-zinc-500 border-b border-zinc-200 dark:border-zinc-800">
                         {TIME_SLOTS.map((slot) => (
                           <th
                             key={slot.id}
@@ -1109,7 +1109,7 @@ export default function DetailPage() {
             </div>
 
             {/* Receipt Summary */}
-            <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-150 dark:border-zinc-850 rounded-2xl p-4 space-y-3">
+            <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 space-y-3">
               <p className="text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest border-b border-zinc-100 dark:border-zinc-800 pb-1">
                 Chi tiết đặt sân
               </p>

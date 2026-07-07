@@ -10,6 +10,7 @@ import {
   useWatch,
 } from "react-hook-form";
 import { CourtInput } from "./court-schema";
+import { CommonTextField } from "@/components/common";
 
 interface SubCourtsConfigProps {
   control: Control<CourtInput>;
@@ -67,27 +68,23 @@ export default function SubCourtsConfig({
 
   return (
     <div className="space-y-3.5 p-4 bg-zinc-100/50 dark:bg-zinc-900/40 border border-zinc-200/50 dark:border-zinc-800/80 rounded-2xl">
-      <label className="text-xs font-bold text-zinc-650 dark:text-zinc-350 uppercase tracking-wider block">
+      <label className="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider block">
         ⚙️ Cấu hình tên từng sân con
       </label>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
         {fields.map((field, index) => (
-          <div key={field.id} className="space-y-1.5">
-            <label className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-              Sân nhỏ #{index + 1}
-            </label>
-            <input
-              type="text"
-              {...register(`subCourts.${index}.name` as const)}
-              // placeholder={`Sân số ${index + 1}`}
-              className="w-full text-xs p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-850 bg-white dark:bg-zinc-900 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all dark:text-zinc-100"
-            />
-            {errors.subCourts?.[index]?.name && (
-              <p className="text-red-500 text-[10px] font-bold mt-0.5">
-                ⚠️ {errors.subCourts[index].name?.message}
-              </p>
-            )}
-          </div>
+          <CommonTextField
+            key={field.id}
+            size="small"
+            label={`Sân #${index + 1}`}
+            error={!!errors.subCourts?.[index]?.name}
+            helperText={
+              errors.subCourts?.[index]?.name
+                ? `⚠️ ${errors.subCourts[index].name?.message}`
+                : ""
+            }
+            {...register(`subCourts.${index}.name` as const)}
+          />
         ))}
       </div>
     </div>

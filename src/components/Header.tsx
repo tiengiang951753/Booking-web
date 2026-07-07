@@ -74,7 +74,7 @@ export default function Header() {
               </span>
               <button
                 onClick={logout}
-                className="text-sm font-semibold border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-850/50 text-zinc-700 dark:text-zinc-300 px-4.5 py-2 rounded-full transition-all"
+                className="text-sm font-semibold border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 text-zinc-700 dark:text-zinc-300 px-4.5 py-2 rounded-full transition-all"
               >
                 Đăng xuất
               </button>

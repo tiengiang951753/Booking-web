@@ -13,9 +13,11 @@
   --highlight: #3AD4C5;
   --button-text: #FFFFFF;
   --input-bg: #ffffff;
+  --input-hover-bg: rgba(0, 0, 0, 0.04);
   --input-border: #e4e4e7;
   --input-border-focus: var(--primary);
   --text-muted: #71717a;
+  --input-label: #71717a;
 }
 
 @theme inline {
@@ -35,10 +37,12 @@
   color-scheme: dark;
   --scrollbar-track: #18181b;
   --scrollbar-thumb: rgba(156, 163, 175, 0.5);
-  --input-bg: #18181b;
+  --input-bg: #333334;
+  --input-hover-bg: rgba(255, 255, 255, 0.08);
   --input-border: #27272a;
   --input-border-focus: var(--highlight);
   --text-muted: #a1a1aa;
+  --input-label: #a1a1aa;
 }
 
 @layer base {
