@@ -81,7 +81,8 @@ export default function RegisterForm({ role }: RegisterFormProps) {
           name: data.businessName || "Sân thể thao mới",
           sportType: data.sportType || "badminton",
           address: data.businessAddress || "",
-          pricePerHour: 50000,
+          priceMin: 50000,
+          priceMax: 100000,
           openingTime: "06:00",
           closingTime: "22:00",
           subCourtsCount: 1,
@@ -91,6 +92,7 @@ export default function RegisterForm({ role }: RegisterFormProps) {
           ownerId: userCredential.user.uid,
           ownerName: data.fullName,
           active: false,
+          featured: false,
           createdAt: new Date().toISOString(),
         });
       }

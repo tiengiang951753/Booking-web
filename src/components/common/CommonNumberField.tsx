@@ -42,10 +42,10 @@ export const CommonNumberField = forwardRef<HTMLDivElement, CommonNumberFieldPro
           ...e,
           target: {
             ...e.target,
-            name: props.name,
-            value: numericValue as any,
+            name: props.name || "",
+            value: numericValue,
           },
-        });
+        } as any);
       }
     };
 

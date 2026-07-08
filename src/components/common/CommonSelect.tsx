@@ -132,7 +132,7 @@ export const CommonSelect = forwardRef<HTMLDivElement, CommonSelectProps>(
                           },
                         },
                       },
-                      ...resolvedProps?.MenuProps?.slotProps?.paper?.sx,
+                      ...(resolvedProps?.MenuProps?.slotProps?.paper as any)?.sx,
                     },
                   },
                 },

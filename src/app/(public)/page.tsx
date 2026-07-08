@@ -141,11 +141,13 @@ export default function Home() {
             category: data.sportType,
             rating: 5.0,
             reviews: 0,
-            price: `${data.pricePerHour.toLocaleString("vi-VN")}đ / giờ`,
+            price: data.priceMin && data.priceMax
+              ? `${data.priceMin.toLocaleString("vi-VN")}đ - ${data.priceMax.toLocaleString("vi-VN")}đ / giờ`
+              : `${(data.priceMin || data.pricePerHour || 50000).toLocaleString("vi-VN")}đ / giờ`,
             image: data.imageUrl || "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&w=800&q=80",
             location: data.address,
             features: [`Sân con: ${data.subCourtsCount}`, "Đặt lịch nhanh", "Đèn chiếu sáng"],
-            popular: false,
+            popular: data.featured ?? false,
           };
         });
         setCustomCourts(list);

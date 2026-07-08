@@ -53,7 +53,8 @@ function ConfigCourtForm() {
       name: "",
       sportType: "badminton",
       address: "",
-      pricePerHour: 50000,
+      priceMin: 50000,
+      priceMax: 100000,
       openingTime: "06:00",
       closingTime: "22:00",
       subCourtsCount: 1,
@@ -61,6 +62,7 @@ function ConfigCourtForm() {
       description: "",
       imageUrl: "",
       active: false,
+      featured: false,
     },
   });
 
@@ -71,7 +73,8 @@ function ConfigCourtForm() {
       name: "",
       sportType: "badminton",
       address: "",
-      pricePerHour: 50000,
+      priceMin: 50000,
+      priceMax: 100000,
       openingTime: "06:00",
       closingTime: "22:00",
       subCourtsCount: 1,
@@ -79,6 +82,7 @@ function ConfigCourtForm() {
       description: "",
       imageUrl: "",
       active: false,
+      featured: false,
     },
   });
 
@@ -127,7 +131,8 @@ function ConfigCourtForm() {
         name: "",
         sportType: "badminton",
         address: "",
-        pricePerHour: 50000,
+        priceMin: 50000,
+        priceMax: 100000,
         openingTime: "06:00",
         closingTime: "22:00",
         subCourtsCount: 1,
@@ -135,6 +140,7 @@ function ConfigCourtForm() {
         description: "",
         imageUrl: "",
         active: false,
+        featured: false,
       });
 
       const fetchCourt = async () => {
@@ -154,7 +160,8 @@ function ConfigCourtForm() {
               name: data.name || "",
               sportType: data.sportType || "badminton",
               address: data.address || "",
-              pricePerHour: data.pricePerHour || 50000,
+              priceMin: data.priceMin || data.pricePerHour || 50000,
+              priceMax: data.priceMax || data.pricePerHour || 100000,
               openingTime: data.openingTime || "06:00",
               closingTime: data.closingTime || "22:00",
               subCourtsCount: data.subCourtsCount || 1,
@@ -162,6 +169,7 @@ function ConfigCourtForm() {
               description: data.description || "",
               imageUrl: data.imageUrl || "",
               active: data.active ?? false,
+              featured: data.featured ?? false,
             });
             setLoadedCourtId(courtId);
           } else {
@@ -183,7 +191,8 @@ function ConfigCourtForm() {
         name: "",
         sportType: "badminton",
         address: "",
-        pricePerHour: 50000,
+        priceMin: 50000,
+        priceMax: 100000,
         openingTime: "06:00",
         closingTime: "22:00",
         subCourtsCount: 1,
@@ -191,6 +200,7 @@ function ConfigCourtForm() {
         description: "",
         imageUrl: "",
         active: false,
+        featured: false,
       });
       setLoadedCourtId(null);
     }
@@ -238,7 +248,8 @@ function ConfigCourtForm() {
         name: data.name,
         sportType: data.sportType,
         address: data.address,
-        pricePerHour: Number(data.pricePerHour),
+        priceMin: Number(data.priceMin),
+        priceMax: Number(data.priceMax),
         openingTime: data.openingTime,
         closingTime: data.closingTime,
         subCourtsCount: Number(data.subCourtsCount),
@@ -248,6 +259,7 @@ function ConfigCourtForm() {
         ownerId: user.uid,
         ownerName: profile.fullName,
         active: data.active ?? false,
+        featured: data.featured ?? false,
         updatedAt: new Date().toISOString(),
       };
 
@@ -284,7 +296,8 @@ function ConfigCourtForm() {
         name: data.name,
         sportType: data.sportType,
         address: data.address,
-        pricePerHour: Number(data.pricePerHour),
+        priceMin: Number(data.priceMin),
+        priceMax: Number(data.priceMax),
         openingTime: data.openingTime,
         closingTime: data.closingTime,
         subCourtsCount: Number(data.subCourtsCount),
@@ -294,6 +307,7 @@ function ConfigCourtForm() {
         ownerId: user.uid,
         ownerName: profile.fullName,
         active: data.active ?? false,
+        featured: data.featured ?? false,
         updatedAt: new Date().toISOString(),
         createdAt: new Date().toISOString(),
       };
@@ -353,7 +367,8 @@ function ConfigCourtForm() {
                   name: "",
                   sportType: "badminton",
                   address: "",
-                  pricePerHour: 50000,
+                  priceMin: 50000,
+                  priceMax: 100000,
                   openingTime: "06:00",
                   closingTime: "22:00",
                   subCourtsCount: 1,
@@ -361,6 +376,7 @@ function ConfigCourtForm() {
                   description: "",
                   imageUrl: "",
                   active: false,
+                  featured: false,
                 });
                 const params = new URLSearchParams(searchParams.toString());
                 params.set("action", "create-court");

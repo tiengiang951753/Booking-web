@@ -425,7 +425,9 @@ export default function DynamicBookingPage({ params }: Props) {
               categoryIcon: catInfo.icon,
               rating: 5.0,
               reviewsCount: 0,
-              priceRange: `${data.pricePerHour.toLocaleString("vi-VN")}đ / giờ`,
+              priceRange: data.priceMin && data.priceMax
+                ? `${data.priceMin.toLocaleString("vi-VN")}đ - ${data.priceMax.toLocaleString("vi-VN")}đ / giờ`
+                : `${(data.priceMin || data.pricePerHour || 50000).toLocaleString("vi-VN")}đ / giờ`,
               image: data.imageUrl || "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&w=1200&q=80",
               location: data.address,
               phone: data.phone || "N/A",
@@ -445,7 +447,9 @@ export default function DynamicBookingPage({ params }: Props) {
                 type: "Standard"
               })),
               ownerId: data.ownerId,
-              pricePerHour: data.pricePerHour,
+              priceMin: data.priceMin || data.pricePerHour || 50000,
+              priceMax: data.priceMax || data.pricePerHour || 100000,
+              pricePerHour: data.priceMin || data.pricePerHour || 50000,
               active: data.active ?? false,
             });
           }

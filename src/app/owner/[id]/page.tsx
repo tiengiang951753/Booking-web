@@ -960,7 +960,6 @@ export default function OwnerDashboardPage({ params }: Props) {
                                       title={`Khách: ${bookingCell.customerName}\nSĐT: ${bookingCell.customerPhone}\nTrạng thái: ĐÃ DUYỆT\nGiá: ${bookingCell.price.toLocaleString("vi-VN")}đ\nGhi chú: ${bookingCell.note || "Không"}`}
                                       className="h-10 w-full rounded p-1 flex flex-col justify-center items-center gap-0.5 border border-emerald-200 dark:border-emerald-800 bg-emerald-500/10 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 select-none cursor-pointer hover:bg-emerald-500/20 transition-all text-center"
                                     >
-                                    >
                                       <span className="text-[8px] font-black tracking-tight truncate w-full">
                                         {bookingCell.customerName}
                                       </span>

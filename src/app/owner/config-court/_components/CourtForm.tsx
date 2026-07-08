@@ -1,25 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { UseFormReturn, Controller } from "react-hook-form";
 import { CourtInput } from "./court-schema";
 import SubCourtsConfig from "./SubCourtsConfig";
 import {
   CommonTextField,
   CommonSelect,
-  CommonDatePicker,
+  CommonTimePicker,
   CommonSwitch,
   CommonButton,
   CommonImageInput,
   CommonNumberField,
+  CommonDatePicker,
+  CommonDateTimePicker,
+  CommonPriceRangeField,
 } from "@/components/common";
 
 const sportOptions = [
-  { value: "badminton", label: "Cầu lông (🏸)" },
-  { value: "pickleball", label: "Pickleball (🏓)" },
-  { value: "tennis", label: "Tennis (🎾)" },
-  { value: "football", label: "Bóng đá (⚽)" },
-  { value: "basketball", label: "Bóng rổ (🏀)" },
+  { value: "badminton", label: "🏸 Cầu lông" },
+  { value: "pickleball", label: "🏓 Pickleball" },
+  { value: "tennis", label: "🎾 Tennis" },
+  { value: "football", label: "⚽ Bóng đá" },
+  { value: "basketball", label: "🏀 Bóng rổ" },
 ];
 
 interface CourtFormProps {
@@ -49,6 +52,11 @@ export default function CourtForm({
   } = form;
 
   const imageUrlValue = watch("imageUrl");
+
+  useEffect(() => {
+    register("priceMin");
+    register("priceMax");
+  }, [register]);
 
   const handleFormSubmit = async (data: CourtInput) => {
     await onSubmit(data, imageFile);
@@ -117,45 +125,55 @@ export default function CourtForm({
       />
 
       {/* Giá tiền thuê và Giờ hoạt động */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Controller
-          name="pricePerHour"
-          control={control}
-          render={({ field }) => (
-            <CommonNumberField
-              label="Giá thuê (VNĐ/giờ)"
-              suffix="VNĐ"
-              fullWidth
-              error={!!errors.pricePerHour}
-              helperText={
-                errors.pricePerHour ? `⚠️ ${errors.pricePerHour.message}` : ""
-              }
-              {...field}
-            />
-          )}
-        />
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+        <div className="sm:col-span-2">
+          <CommonPriceRangeField
+            label="Giá thuê (VNĐ/giờ)"
+            error={!!errors.priceMin || !!errors.priceMax}
+            helperText={
+              errors.priceMin
+                ? `⚠️ ${errors.priceMin.message}`
+                : errors.priceMax
+                  ? `⚠️ ${errors.priceMax.message}`
+                  : ""
+            }
+            minPlaceholder="Từ"
+            maxPlaceholder="Đến"
+            suffix="VNĐ/Giờ"
+            valueMin={watch("priceMin")}
+            onChangeMin={(val) =>
+              setValue("priceMin", val as any, { shouldValidate: true })
+            }
+            valueMax={watch("priceMax")}
+            onChangeMax={(val) =>
+              setValue("priceMax", val as any, { shouldValidate: true })
+            }
+          />
+        </div>
 
-        <CommonTextField
-          label="Giờ mở cửa"
-          type="time"
-          fullWidth
-          error={!!errors.openingTime}
-          helperText={
-            errors.openingTime ? `⚠️ ${errors.openingTime.message}` : ""
-          }
-          {...register("openingTime")}
-        />
+        <div className="sm:col-span-1">
+          <CommonTimePicker
+            label="Giờ mở cửa"
+            fullWidth
+            error={!!errors.openingTime}
+            helperText={
+              errors.openingTime ? `⚠️ ${errors.openingTime.message}` : ""
+            }
+            {...register("openingTime")}
+          />
+        </div>
 
-        <CommonTextField
-          label="Giờ đóng cửa"
-          type="time"
-          fullWidth
-          error={!!errors.closingTime}
-          helperText={
-            errors.closingTime ? `⚠️ ${errors.closingTime.message}` : ""
-          }
-          {...register("closingTime")}
-        />
+        <div className="sm:col-span-1">
+          <CommonTimePicker
+            label="Giờ đóng cửa"
+            fullWidth
+            error={!!errors.closingTime}
+            helperText={
+              errors.closingTime ? `⚠️ ${errors.closingTime.message}` : ""
+            }
+            {...register("closingTime")}
+          />
+        </div>
       </div>
 
       {/* Tải hình ảnh file đại diện */}
@@ -183,12 +201,29 @@ export default function CourtForm({
       />
 
       {/* Trạng thái kích hoạt hiển thị */}
-      <CommonSwitch
-        label="🌐 Kích hoạt hiển thị sân"
-        description="Khi bật, khách hàng có thể tìm thấy và đặt lịch sân này trên trang chủ."
-        checked={!!watch("active")}
-        {...register("active")}
-      />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <CommonSwitch
+          label="🌐 Cho phép đặt sân"
+          description="Khi bật, khách hàng có thể chọn và đặt sân trên app."
+          checked={!!watch("active")}
+          {...register("active")}
+        />
+
+        <CommonSwitch
+          label="⭐ Chế độ hiển thị nổi bật"
+          description={
+            <span className="block mt-0.5">
+              Đưa sân lên vị trí nổi bật trên trang chủ để thu hút khách đặt
+              sân.{" "}
+              <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 mt-1 rounded bg-amber-500/10 text-amber-500 dark:text-amber-400 font-bold border border-amber-500/20">
+                💎 Chức năng có yêu cầu trả phí
+              </span>
+            </span>
+          }
+          checked={!!watch("featured")}
+          {...register("featured")}
+        />
+      </div>
 
       {/* Submit & Cancel Buttons */}
       <div className="flex items-center justify-end gap-4 pt-4 border-t border-zinc-100 dark:border-zinc-800/80">

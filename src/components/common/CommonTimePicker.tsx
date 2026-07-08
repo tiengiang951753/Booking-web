@@ -3,18 +3,18 @@
 import React, { forwardRef } from "react";
 import { CommonTextField, CommonTextFieldProps } from "./CommonTextField";
 
-export type CommonDatePickerProps = Omit<CommonTextFieldProps, "type">;
+export type CommonTimePickerProps = Omit<CommonTextFieldProps, "type">;
 
-export const CommonDatePicker = forwardRef<HTMLDivElement, CommonDatePickerProps>(
+export const CommonTimePicker = forwardRef<HTMLDivElement, CommonTimePickerProps>(
   (props, ref) => {
     return (
       <CommonTextField
         ref={ref}
-        type="date"
+        type="time"
         {...props}
       />
     );
   }
 );
 
-CommonDatePicker.displayName = "CommonDatePicker";
+CommonTimePicker.displayName = "CommonTimePicker";

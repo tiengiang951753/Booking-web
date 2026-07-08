@@ -51,7 +51,20 @@ const textFieldStyles = {
 };
 
 export const CommonTextField = forwardRef<HTMLDivElement, CommonTextFieldProps>(
-  ({ leftIcon, rightIcon, prefix, suffix, sx, slotProps, label, size, ...props }, ref) => {
+  (
+    {
+      leftIcon,
+      rightIcon,
+      prefix,
+      suffix,
+      sx,
+      slotProps,
+      label,
+      size,
+      ...props
+    },
+    ref,
+  ) => {
     const inputSlotProps = {
       ...slotProps?.input,
       ...((leftIcon || prefix) && {
@@ -113,7 +126,10 @@ export const CommonTextField = forwardRef<HTMLDivElement, CommonTextFieldProps>(
     if (label) {
       return (
         <div className={`${labelSpacingClass} w-full`}>
-          <label className={labelTextClass} style={{ color: "var(--input-label)" }}>
+          <label
+            className={labelTextClass}
+            style={{ color: "var(--input-label)" }}
+          >
             {label}
           </label>
           {textFieldElement}
@@ -122,7 +138,7 @@ export const CommonTextField = forwardRef<HTMLDivElement, CommonTextFieldProps>(
     }
 
     return textFieldElement;
-  }
+  },
 );
 
 CommonTextField.displayName = "CommonTextField";
